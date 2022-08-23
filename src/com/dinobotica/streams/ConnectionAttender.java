@@ -2,6 +2,7 @@ package com.dinobotica.streams;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.logging.Logger;
@@ -48,22 +49,30 @@ public class ConnectionAttender implements Runnable{
     {
         try 
         {
-            String readedData = dataIn.readUTF();
-            switch(readedData.replace("\n", "").replace("\r", ""))
+            if(clientSocket.isConnected())
             {
-                case END_MESSAJE:
+                String readedData = dataIn.readUTF();
+                switch(readedData.replace("\n", "").replace("\r", ""))
+                {
+                    case END_MESSAJE:
 
-                    dataOut.writeUTF("Fin de la conexion\n");
-                    endConnection = true;
-                    break;
+                        dataOut.writeUTF("Fin de la conexion\n");
+                        endConnection = true;
+                        break;
 
-                default:
+                    default:
 
-                    int longitud = readedData.length();
-                    dataOut.writeUTF("Longitud del mensaje: " + longitud + "\n");
-                
+                        int longitud = readedData.length();
+                        dataOut.writeUTF("Longitud del mensaje: " + longitud + "\n");
+                    
+                }
             }
         } 
+        catch(EOFException e)
+        {
+            logger.info("No hay datos por leer en socket " + clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getLocalPort());
+            endConnection = true;
+        }
         catch (IOException e) {
             e.printStackTrace();
             endConnection = true;
