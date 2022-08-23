@@ -10,7 +10,7 @@ public class InputService{
 
     private ServerSocket socket;
     private final int maxConnections = 10;
-    private final long inactivityTimeOut = 30000L;
+    private final int inactivityTimeOut = 30000;
     
     private final Logger logger = Logger.getLogger(InputService.class.getName());
     
@@ -22,7 +22,7 @@ public class InputService{
             socket = new ServerSocket(port);
             while(connections < maxConnections)
             {
-                socket.setSoTimeout(30000);
+                socket.setSoTimeout(inactivityTimeOut);
                 Socket clientSocket = socket.accept();
                 new Thread(new ConnectionAttender(clientSocket)).start();
                 connections++;

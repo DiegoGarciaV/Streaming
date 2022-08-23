@@ -19,7 +19,7 @@ public class AutoClient extends ClientService implements Runnable{
         long attempts = 0;
         while(!endSendingData)
         {
-            String response = sendData(Long.toString(System.currentTimeMillis()));
+            sendData(Long.toString(System.currentTimeMillis()));
             logger.info(++attempts + " mensajes enviados.");
 
             if(System.currentTimeMillis() > endExecutionTime)
