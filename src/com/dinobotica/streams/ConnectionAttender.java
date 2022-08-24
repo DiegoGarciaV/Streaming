@@ -2,6 +2,7 @@ package com.dinobotica.streams;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.logging.Logger;
@@ -12,16 +13,21 @@ public class ConnectionAttender implements Runnable{
     private DataOutputStream dataOut;
     private Socket clientSocket;
     private boolean endConnection = false;
+    private MessageDTO messageDTO;
 
-    private final String END_MESSAJE = "_END_OF_MSG_";
+    private static final String END_MESSAJE = "_END_OF_MSG_";
+    private static final String SET_DATA = "_SET_";
+    private static final String GET_DATA = "_GET_";
+    private static final String SEPARATOR = ":";
 
     private final Logger logger = Logger.getLogger(ConnectionAttender.class.getName());
 
-    public ConnectionAttender(Socket clienSocket) throws IOException
+    public ConnectionAttender(Socket clienSocket,MessageDTO messageDTO) throws IOException
     {
         this.clientSocket = clienSocket;
         dataIn = new DataInputStream(clienSocket.getInputStream());
         dataOut = new DataOutputStream(clienSocket.getOutputStream());
+        this.messageDTO = messageDTO;
         
     }
 
@@ -29,6 +35,9 @@ public class ConnectionAttender implements Runnable{
         this.clientSocket = clientSocket;
     }
 
+    public void setData(MessageDTO messageDTO) {
+        this.messageDTO = messageDTO;
+    }
 
 
     @Override
@@ -48,22 +57,36 @@ public class ConnectionAttender implements Runnable{
     {
         try 
         {
-            String readedData = dataIn.readUTF();
-            switch(readedData.replace("\n", "").replace("\r", ""))
+            if(clientSocket.isConnected())
             {
-                case END_MESSAJE:
-
+                String readedData = dataIn.readUTF();
+                if(readedData.contains(END_MESSAJE))
+                {
                     dataOut.writeUTF("Fin de la conexion\n");
                     endConnection = true;
-                    break;
-
-                default:
-
+                }
+                else if(readedData.contains(SET_DATA))
+                {
+                    String newData = readedData.split(SEPARATOR)[1];
+                    messageDTO.setMessage(newData);
+                    dataOut.writeUTF("Mensaje recibido y almacenado\n");
+                }
+                else if(readedData.contains(GET_DATA))
+                {
+                    dataOut.writeUTF(messageDTO.getMessage());
+                }
+                else
+                {
                     int longitud = readedData.length();
                     dataOut.writeUTF("Longitud del mensaje: " + longitud + "\n");
-                
+                }
             }
         } 
+        catch(EOFException e)
+        {
+            logger.info("No hay datos por leer en socket " + clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getLocalPort());
+            endConnection = true;
+        }
         catch (IOException e) {
             e.printStackTrace();
             endConnection = true;

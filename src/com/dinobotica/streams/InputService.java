@@ -9,22 +9,35 @@ import java.util.logging.Logger;
 public class InputService{
 
     private ServerSocket socket;
-    private final int maxConnections = 10;
-    private final long inactivityTimeOut = 30000L;
+    private static final int MAX_CONNECTIONS = 10;
+    private static final int INACTIVITY_TIMEOUT = 30000;
+
+    private MessageDTO messageDTO = new MessageDTO();
+
     
+    
+    public MessageDTO getContainer() {
+        return messageDTO;
+    }
+
+    public void setContainer(MessageDTO messageDTO) {
+        this.messageDTO = messageDTO;
+    }
+
     private final Logger logger = Logger.getLogger(InputService.class.getName());
     
     public void start(int port)
     {
+        messageDTO.setMessage("");
         logger.info("Iniciando servicio");
         try{
             int connections = 0;
             socket = new ServerSocket(port);
-            while(connections < maxConnections)
+            while(connections < MAX_CONNECTIONS)
             {
-                socket.setSoTimeout(30000);
+                socket.setSoTimeout(INACTIVITY_TIMEOUT);
                 Socket clientSocket = socket.accept();
-                new Thread(new ConnectionAttender(clientSocket)).start();
+                new Thread(new ConnectionAttender(clientSocket,messageDTO)).start();
                 connections++;
             }
         }
@@ -41,7 +54,7 @@ public class InputService{
 
     }
 
-    public void finalize()
+    public void finalizeService()
     {
         logger.info("Cerrando servicio");
         try 
@@ -58,7 +71,7 @@ public class InputService{
         
         InputService inputService = new InputService();
         inputService.start(6666);
-        inputService.finalize();
+        inputService.finalizeService();
     }
     
 }

@@ -37,6 +37,7 @@ public class ClientService {
         catch(SocketException SoE)
         {
             logger.severe("Ha ocurrido un problema con la conexion.");
+            SoE.printStackTrace();
         }
         catch(IOException IoE)
         {
