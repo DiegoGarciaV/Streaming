@@ -13,16 +13,21 @@ public class ConnectionAttender implements Runnable{
     private DataOutputStream dataOut;
     private Socket clientSocket;
     private boolean endConnection = false;
+    private MessageDTO messageDTO;
 
-    private final String END_MESSAJE = "_END_OF_MSG_";
+    private static final String END_MESSAJE = "_END_OF_MSG_";
+    private static final String SET_DATA = "_SET_";
+    private static final String GET_DATA = "_GET_";
+    private static final String SEPARATOR = ":";
 
     private final Logger logger = Logger.getLogger(ConnectionAttender.class.getName());
 
-    public ConnectionAttender(Socket clienSocket) throws IOException
+    public ConnectionAttender(Socket clienSocket,MessageDTO messageDTO) throws IOException
     {
         this.clientSocket = clienSocket;
         dataIn = new DataInputStream(clienSocket.getInputStream());
         dataOut = new DataOutputStream(clienSocket.getOutputStream());
+        this.messageDTO = messageDTO;
         
     }
 
@@ -30,6 +35,9 @@ public class ConnectionAttender implements Runnable{
         this.clientSocket = clientSocket;
     }
 
+    public void setData(MessageDTO messageDTO) {
+        this.messageDTO = messageDTO;
+    }
 
 
     @Override
@@ -52,19 +60,25 @@ public class ConnectionAttender implements Runnable{
             if(clientSocket.isConnected())
             {
                 String readedData = dataIn.readUTF();
-                switch(readedData.replace("\n", "").replace("\r", ""))
+                if(readedData.contains(END_MESSAJE))
                 {
-                    case END_MESSAJE:
-
-                        dataOut.writeUTF("Fin de la conexion\n");
-                        endConnection = true;
-                        break;
-
-                    default:
-
-                        int longitud = readedData.length();
-                        dataOut.writeUTF("Longitud del mensaje: " + longitud + "\n");
-                    
+                    dataOut.writeUTF("Fin de la conexion\n");
+                    endConnection = true;
+                }
+                else if(readedData.contains(SET_DATA))
+                {
+                    String newData = readedData.split(SEPARATOR)[1];
+                    messageDTO.setMessage(newData);
+                    dataOut.writeUTF("Mensaje recibido y almacenado\n");
+                }
+                else if(readedData.contains(GET_DATA))
+                {
+                    dataOut.writeUTF(messageDTO.getMessage());
+                }
+                else
+                {
+                    int longitud = readedData.length();
+                    dataOut.writeUTF("Longitud del mensaje: " + longitud + "\n");
                 }
             }
         } 
