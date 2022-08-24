@@ -41,7 +41,7 @@ public class InputService{
 
     }
 
-    public void finalize()
+    public void finalizeService()
     {
         logger.info("Cerrando servicio");
         try 
@@ -58,7 +58,7 @@ public class InputService{
         
         InputService inputService = new InputService();
         inputService.start(6666);
-        inputService.finalize();
+        inputService.finalizeService();
     }
     
 }
