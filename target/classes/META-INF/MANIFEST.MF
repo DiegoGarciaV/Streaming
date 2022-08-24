@@ -1,0 +1,5 @@
+<manifestEntries>
+    <Main-Class>com.dinobotica.streams.lib.client.VideoSender</Main-Class>
+    <Specification-Title>Cliente que envia imagenes al servidor</Specification-Title>
+    <Specification-Version>1.1</Specification-Version>
+</manifestEntries>
