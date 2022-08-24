@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.logging.Logger;
 
 public class ConnectionAttender implements Runnable{
@@ -18,7 +19,7 @@ public class ConnectionAttender implements Runnable{
     private static final String END_MESSAJE = "_END_OF_MSG_";
     private static final String SET_DATA = "_SET_";
     private static final String GET_DATA = "_GET_";
-    private static final String SEPARATOR = ":*:";
+    private static final String SEPARATOR = "_M_";
 
     private final Logger logger = Logger.getLogger(ConnectionAttender.class.getName());
 
@@ -85,6 +86,11 @@ public class ConnectionAttender implements Runnable{
         catch(EOFException e)
         {
             logger.info("No hay datos por leer en socket " + clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getLocalPort());
+            endConnection = true;
+        }
+        catch(SocketException e)
+        {
+            logger.info("El cliente cerro la conexión de forma inesperada " + clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getLocalPort());
             endConnection = true;
         }
         catch (IOException e) {

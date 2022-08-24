@@ -32,18 +32,22 @@ public class Comunications {
         Comunications comunications = new Comunications();
         comunications.startClient();
         boolean connStatus = true;
-        while(connStatus)
+        String hostResponse = "";
+        while(connStatus && comunications.getClientService().isConnected())
         {
             String cmd = System.console().readLine("Escriba un mensaje: ");
             if(cmd.equals("END"))
+            {
+                hostResponse = comunications.getClientService().sendData(comunications.END_MESSAJE);
                 connStatus = false;
+            }  
             else
             {
-                String hostResponse = comunications.getClientService().sendData(cmd);
+                hostResponse = comunications.getClientService().sendData(cmd);
                 System.out.println(hostResponse);
             }
         }
-        String hostResponse = comunications.getClientService().sendData(comunications.END_MESSAJE);
+        
         if(hostResponse.equals("Fin de la conexion\n"))
             System.out.println("Se ha finalizado correctamente la comunicación");
         comunications.getClientService().closeConnection();

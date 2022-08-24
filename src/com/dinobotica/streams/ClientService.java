@@ -13,8 +13,13 @@ public class ClientService {
     private DataInputStream dataIn;
     private DataOutputStream dataOut;
     private Socket clientSocket;
+    private boolean connected;    
 
     private final Logger logger = Logger.getLogger(ConnectionAttender.class.getName());
+
+    public boolean isConnected() {
+        return connected;
+    }
 
     public ClientService(String server, int port) throws IOException
     {
@@ -22,7 +27,7 @@ public class ClientService {
         clientSocket = new Socket(server, port);
         dataIn = new DataInputStream(clientSocket.getInputStream());
         dataOut = new DataOutputStream(clientSocket.getOutputStream());
-        
+        connected = true;
 
     }
 
@@ -33,11 +38,18 @@ public class ClientService {
         {
             dataOut.writeUTF(message + "\n");
             response = dataIn.readUTF();
+            connected = !response.equals("Fin de la conexion\n");
+
         }
         catch(SocketException SoE)
         {
             logger.severe("Ha ocurrido un problema con la conexion.");
-            SoE.printStackTrace();
+            if(clientSocket.isConnected())
+            {
+                logger.severe("El servidor ha cerrado la conexión");
+                connected = false;
+
+            }
         }
         catch(IOException IoE)
         {
@@ -55,6 +67,7 @@ public class ClientService {
         {
             logger.info("Cerrando conexión del socket " + clientSocket.getLocalPort());
             clientSocket.close();
+            connected = false;
         }
         catch(IOException ioException)
         {
@@ -62,5 +75,5 @@ public class ClientService {
             ioException.printStackTrace();
         }
     }
-    
+
 }
