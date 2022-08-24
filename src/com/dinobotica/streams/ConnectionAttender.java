@@ -18,7 +18,7 @@ public class ConnectionAttender implements Runnable{
     private static final String END_MESSAJE = "_END_OF_MSG_";
     private static final String SET_DATA = "_SET_";
     private static final String GET_DATA = "_GET_";
-    private static final String SEPARATOR = ":";
+    private static final String SEPARATOR = ":*:";
 
     private final Logger logger = Logger.getLogger(ConnectionAttender.class.getName());
 
