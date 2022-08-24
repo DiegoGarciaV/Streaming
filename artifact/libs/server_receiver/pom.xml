@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.dinobotica.streams</groupId>
+		<artifactId>LIBRARIES-streaming-video</artifactId>
+		<version>0.0.0</version>
+	</parent>
+	<groupId>com.dinobotica.streams.lib</groupId>
+	<artifactId>server_receiver</artifactId>
+	<version>0.0.0</version>
+	<packaging>jar</packaging>
+	<description>This project implements a ServerSocket to accept any connection and receive data</description>
+	<properties>
+    
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>com.dinobotica.streams.dto</groupId>
+			<artifactId>message</artifactId>
+			<version>0.0.0</version>
+		</dependency>
+	</dependencies>
+	<build>
+		<finalName>${project.artifactId}</finalName>
+		<plugins>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>install</phase>
+						<configuration>
+							<tasks>
+								<copy todir="${outputDirectoryLibraries}" file="./target/${project.artifactId}.jar" />
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>
+								${outputDirectoryLibraries}/libs
+							</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>libs/</classpathPrefix>
+							<mainClass>
+								com.dinobotica.streams.lib.server.InputService
+							</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

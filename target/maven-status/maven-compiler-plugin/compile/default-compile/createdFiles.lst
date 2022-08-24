@@ -1,7 +1,0 @@
-com\dinobotica\streams\lib\client\AutoClient.class
-com\dinobotica\streams\lib\client\VideoSender.class
-com\dinobotica\streams\lib\client\ClientService.class
-com\dinobotica\streams\lib\server\ConnectionAttender.class
-com\dinobotica\streams\Comunications.class
-com\dinobotica\streams\dto\MessageDTO.class
-com\dinobotica\streams\lib\server\InputService.class
