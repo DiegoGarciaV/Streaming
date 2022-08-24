@@ -1,10 +1,12 @@
-package com.dinobotica.streams;
+package com.dinobotica.streams.lib.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.logging.Logger;
+
+import com.dinobotica.streams.dto.MessageDTO;
 
 public class InputService{
 

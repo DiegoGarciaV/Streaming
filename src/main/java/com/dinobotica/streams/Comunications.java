@@ -2,6 +2,8 @@ package com.dinobotica.streams;
 
 import java.io.IOException;
 
+import com.dinobotica.streams.lib.client.ClientService;
+
 public class Comunications {
 
     private ClientService clientService;

@@ -1,4 +1,4 @@
-package com.dinobotica.streams;
+package com.dinobotica.streams.lib.server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.logging.Logger;
+
+import com.dinobotica.streams.dto.MessageDTO;
 
 public class ConnectionAttender implements Runnable{
 
