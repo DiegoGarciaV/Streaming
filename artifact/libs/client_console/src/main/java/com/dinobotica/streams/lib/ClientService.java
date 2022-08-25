@@ -3,6 +3,8 @@ package com.dinobotica.streams.lib.client;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.logging.Logger;
@@ -10,8 +12,8 @@ import java.util.logging.Logger;
 
 public class ClientService {
 
-    protected DataInputStream dataIn;
-    protected DataOutputStream dataOut;
+    protected ObjectInputStream dataIn;
+    protected ObjectOutputStream dataOut;
     private Socket clientSocket;
     protected boolean connected;    
 
@@ -23,21 +25,24 @@ public class ClientService {
 
     public ClientService(String server, int port) throws IOException
     {
-        logger.info("Iniciando servicio cliente.");
         clientSocket = new Socket(server, port);
-        dataIn = new DataInputStream(clientSocket.getInputStream());
-        dataOut = new DataOutputStream(clientSocket.getOutputStream());
+        dataOut = new ObjectOutputStream(clientSocket.getOutputStream());
+        dataIn = new ObjectInputStream(clientSocket.getInputStream());
         connected = true;
 
     }
 
-    public String sendData(String message)
+    public String sendData(Object message)
     {
         String response = "None response\n";
+        long initTime = System.currentTimeMillis();
         try
         {
-            dataOut.writeUTF(message + "\n");
-            response = dataIn.readUTF();
+            dataOut.writeObject(message);
+            long endTime = System.currentTimeMillis();
+            logger.info("Tiempo de ejecucion: " + (endTime - initTime) + "ms");
+            response = (String)dataIn.readObject();
+            logger.info(response);
             connected = !response.equals("Fin de la conexion\n");
 
         }
@@ -55,6 +60,10 @@ public class ClientService {
         {
             logger.severe("Ha ocurrido un problema durante la transmisión del mensaje.");
             IoE.printStackTrace();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
         }
         
         return response;

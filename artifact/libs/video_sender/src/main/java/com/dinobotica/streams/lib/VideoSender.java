@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
 import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamResolution;
 
 public class VideoSender extends ClientService implements Runnable{
 
@@ -23,17 +24,29 @@ public class VideoSender extends ClientService implements Runnable{
     public void run() {
         
         Webcam webcam = Webcam.getDefault();
+        webcam.setViewSize(WebcamResolution.QVGA.getSize());
         webcam.open();
         try 
         {
-            BufferedImage frame = webcam.getImage();
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(frame, "PNG", baos );
-            baos.flush();
-            byte[] imageInByte = baos.toByteArray();
-            baos.close(); 
-            String img = new String(imageInByte);
-            sendData(img);
+            logger.info("Inicio de la transmision\n");
+            for(int i=0;i<72;i++)
+            {
+                BufferedImage frame = webcam.getImage();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                 /*
+                ImageIO.write(frame, "PNG", dataOut );
+               */
+                ImageIO.write(frame, "PNG", baos );
+                baos.flush();
+                byte[] imageInByte = baos.toByteArray();
+                baos.close(); 
+                String img = new String(imageInByte);
+                String respouesta = sendData(img);
+                //logger.info(respouesta); 
+            }
+            logger.info("Fin de la transmision\n");
+            sendData("_END_OF_MSG_");
+            
         } 
         catch (IOException e) {
             

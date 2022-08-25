@@ -11,7 +11,7 @@ import com.dinobotica.streams.dto.MessageDTO;
 public class InputService{
 
     private ServerSocket socket;
-    private static final int MAX_CONNECTIONS = 10;
+    private static final int MAX_CONNECTIONS = 2000;
     private static final int INACTIVITY_TIMEOUT = 300000;
 
     private MessageDTO messageDTO = new MessageDTO();

@@ -21,6 +21,11 @@
 			<artifactId>client_console</artifactId>
 			<version>0.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.dinobotica.streams.dto</groupId>
+			<artifactId>message</artifactId>
+			<version>0.0.0</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}</finalName>
@@ -71,7 +76,7 @@
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>libs/</classpathPrefix>
 							<mainClass>
-								com.dinobotica.streams.lib.client.VideoSender
+								com.dinobotica.streams.lib.client.ParallelVideoSender
 							</mainClass>
 						</manifest>
 					</archive>
