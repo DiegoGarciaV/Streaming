@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.logging.Logger;
 
+import com.dinobotica.streams.dto.Constants;
 import com.dinobotica.streams.dto.MessageDTO;
 
 import javax.imageio.ImageIO;
@@ -19,7 +20,7 @@ public class ParallelVideoSender{
     private String host;
     private int port;
     private BufferedImage image;
-    private static final int CHANNELS = 8;
+    private static final int CHANNELS = 1;
     private MessageDTO messageDTO = new MessageDTO();
 
     private final Logger logger = Logger.getLogger(ParallelVideoSender.class.getName());
@@ -35,43 +36,60 @@ public class ParallelVideoSender{
     {
         Webcam webcam = Webcam.getDefault();
         webcam.setViewSize(WebcamResolution.VGA.getSize());
-        webcam.open();
-        long initTime = System.currentTimeMillis();
-        try{
-            ClientService clientService = new ClientService(host,port);
-            for(int i=0;i<72;i++)
-                {
-                    BufferedImage frame = webcam.getImage();
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    try{
-                        ImageIO.write(frame, "PNG", baos );
-                        baos.flush();
-                        byte[] imageInByte = baos.toByteArray();
-                        baos.close(); 
-                        int imageInByteSize = imageInByte.length;
-                        //logger.info("Tamanio de la transmision: " + imageInByteSize + ", Cuadro " + i);
-                        // for(int j=0; j<CHANNELS-1; j++)
-                        // {
-                        //     byte[] imageInByteChunked = new byte[imageInByteSize/CHANNELS];
-                        //     System.arraycopy(imageInByte, ((imageInByteSize/CHANNELS)*j), imageInByteChunked, 0, imageInByteChunked.length);
-                        //     new Thread(new ChunkSender(host,port,imageInByteChunked)).start();
-                        // }
-                        byte[] imageInByteChunked = new byte[imageInByteSize/CHANNELS + imageInByteSize%CHANNELS];
-                        System.arraycopy(imageInByte, ((imageInByteSize/CHANNELS)*(CHANNELS-1)), imageInByteChunked, 0, imageInByteChunked.length);
-                        // new Thread(new ChunkSender(host,port,imageInByteChunked)).start();
-                        //new Thread(new ChunkSender(host,port,imageInByte)).start();
-                        clientService.sendData(imageInByte);
-                    }
-                    catch(IOException e){}
-                    
-                    // String img = new String(imageInByte);
-                    // String respouesta = sendData(img);
-                    //logger.info(respouesta); 
-                }
-                clientService.closeConnection();
-            }
-            catch(IOException e){}
+        while(!webcam.open());
+        
 
+        long frames = Constants.FRAME_RATE;
+        logger.info("Capturando");
+        this.messageDTO.setMessage("0:0");
+        try
+        {
+            ClientService clientService = new ClientService(host,port);
+            for(int i=0;i<frames;i++)
+            {
+                new Thread(new ChunkSender(webcam,i,messageDTO,clientService)).start();
+            }
+            while(Double.parseDouble(messageDTO.getMessage().split(":")[0])<(frames-1)/2);
+            clientService.sendData("_END_OF_MSG_".getBytes());
+            clientService.closeConnection();
+        }
+        catch(IOException e){}
+        
+
+        // try
+        // {
+        //     for(int i=0;i<frames;i++)
+        //     {
+        //         new Thread(new ChunkSender(webcam,i,messageDTO,null)).start();
+        //     }
+        //     try{
+        //         Thread.sleep(8000);
+        //     }
+        //     catch(Exception e){}
+        // }
+        // catch(IOException e){}
+        
+        // logger.info("Transmitiendo");
+        // try
+        // {
+        //     int i = 0;
+        //     ClientService clientService = new ClientService(host,port);
+        //     for(i=0;i<frames;i++)
+        //     {
+        //         byte[] frame = messageDTO.getBuffer()[i];
+        //         System.out.println(i);
+        //         clientService.sendData(frame);
+                
+        //     }
+        //     clientService.sendData("_END_OF_MSG_".getBytes());
+        //     try{
+        //         Thread.sleep(3000);
+        //     }
+        //     catch(Exception e){}
+        //     clientService.closeConnection();
+        // }
+        // catch(IOException e){}
+        
         webcam.close();
     }
 

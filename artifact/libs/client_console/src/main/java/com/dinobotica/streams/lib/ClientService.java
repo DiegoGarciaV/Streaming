@@ -1,5 +1,7 @@
 package com.dinobotica.streams.lib.client;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -7,13 +9,16 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Arrays;
 import java.util.logging.Logger;
+
+import com.dinobotica.streams.dto.Constants;
 
 
 public class ClientService {
 
-    protected ObjectInputStream dataIn;
-    protected ObjectOutputStream dataOut;
+    protected BufferedInputStream dataIn;
+    protected BufferedOutputStream dataOut;
     private Socket clientSocket;
     protected boolean connected;    
 
@@ -26,23 +31,29 @@ public class ClientService {
     public ClientService(String server, int port) throws IOException
     {
         clientSocket = new Socket(server, port);
-        dataOut = new ObjectOutputStream(clientSocket.getOutputStream());
-        dataIn = new ObjectInputStream(clientSocket.getInputStream());
+        dataOut = new BufferedOutputStream(clientSocket.getOutputStream());
+        dataIn = new BufferedInputStream(clientSocket.getInputStream(),Constants.BUFFER_SIZE);
         connected = true;
 
     }
 
-    public String sendData(Object message)
+    public String sendData(byte[] message)
     {
         String response = "None response\n";
-        long initTime = System.currentTimeMillis();
+        if(message==null)
+            return response;
         try
         {
-            dataOut.writeObject(message);
-            long endTime = System.currentTimeMillis();
-            logger.info("Tiempo de ejecucion: " + (endTime - initTime) + "ms");
-            response = (String)dataIn.readObject();
-            logger.info(response);
+            dataOut.write(message);
+            dataOut.flush();
+            byte lectura[] = new byte[Constants.BUFFER_SIZE];
+            dataIn.read(lectura);
+
+            int k = 0;
+            while((k < (Constants.BUFFER_SIZE)-3) && (lectura[k++] != 0 || lectura[k+1] != 0  || lectura[k+2] != 0  || lectura[k+3] != 0));
+            byte[] datareaded = Arrays.copyOf(lectura, k);
+
+            response = new String(lectura);
             connected = !response.equals("Fin de la conexion\n");
 
         }

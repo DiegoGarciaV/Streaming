@@ -40,12 +40,12 @@ public class Comunications {
             String cmd = System.console().readLine("Escriba un mensaje: ");
             if(cmd.equals("END"))
             {
-                hostResponse = comunications.getClientService().sendData(comunications.END_MESSAJE);
+                hostResponse = comunications.getClientService().sendData(comunications.END_MESSAJE.getBytes());
                 connStatus = false;
             }  
             else
             {
-                hostResponse = comunications.getClientService().sendData(cmd);
+                hostResponse = comunications.getClientService().sendData(cmd.getBytes());
                 System.out.println(hostResponse);
             }
         }

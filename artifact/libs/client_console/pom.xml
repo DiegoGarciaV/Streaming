@@ -16,7 +16,11 @@
     
 	</properties>
 	<dependencies>
-		
+		<dependency>
+			<groupId>com.dinobotica.streams.dto</groupId>
+			<artifactId>message</artifactId>
+			<version>0.0.0</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}</finalName>

@@ -26,6 +26,12 @@ public class VideoSender extends ClientService implements Runnable{
         Webcam webcam = Webcam.getDefault();
         webcam.setViewSize(WebcamResolution.QVGA.getSize());
         webcam.open();
+        try
+        { 
+            Thread.sleep(2000); 
+        } 
+        catch(InterruptedException e ) { }
+        
         try 
         {
             logger.info("Inicio de la transmision\n");
@@ -40,12 +46,11 @@ public class VideoSender extends ClientService implements Runnable{
                 baos.flush();
                 byte[] imageInByte = baos.toByteArray();
                 baos.close(); 
-                String img = new String(imageInByte);
-                String respouesta = sendData(img);
+                String respouesta = sendData(imageInByte);
                 //logger.info(respouesta); 
             }
             logger.info("Fin de la transmision\n");
-            sendData("_END_OF_MSG_");
+            sendData("_END_OF_MSG_".getBytes());
             
         } 
         catch (IOException e) {
