@@ -4,20 +4,15 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
-import javax.print.DocFlavor.BYTE_ARRAY;
 
 import com.dinobotica.streams.dto.Constants;
 import com.dinobotica.streams.dto.MessageDTO;
@@ -77,29 +72,19 @@ public class ConnectionAttender implements Runnable{
 
         try 
         {
-            byte lectura[] = new byte[Constants.BUFFER_SIZE];
-            dataIn.read(lectura);
-            int k = 0;
-            while((k < (Constants.BUFFER_SIZE)) && lectura[k++]!=0)
-            {
-                System.out.println("" + lectura[k-1]);
-            }
+            byte[] lectura = new byte[Constants.BUFFER_SIZE];
+            int readSize = dataIn.read(lectura);
 
-            byte[] datareaded = Arrays.copyOf(lectura, k);
-            System.out.println("Frame " + contador++ + ", " + k);
-            getString(new String(lectura));
-            try{
-                
-            BufferedImage newBi = ImageIO.read(new ByteArrayInputStream(lectura));
-            ImageIO.write(newBi, "JPG", new FileOutputStream("foto_serv.jpg"));
-            }
-            catch(Exception e){}
+            byte[] datareaded = Arrays.copyOf(lectura, readSize);
+            getString(new String(datareaded));
+            BufferedImage newBi = ImageIO.read(new ByteArrayInputStream(datareaded));
+            if(newBi!=null)
+                ImageIO.write(newBi, "JPG", new FileOutputStream("foto_serv.jpg"));
             
         } 
         catch(EOFException e)
         {
             logger.info("No hay datos por leer en socket " + clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getLocalPort());
-            //e.printStackTrace();
             endConnection = true;
         }
         catch(SocketException e)
@@ -111,8 +96,13 @@ public class ConnectionAttender implements Runnable{
             e.printStackTrace();
             endConnection = true;
         }
+        catch(IllegalArgumentException e)
+        {
+            e.printStackTrace();
+        }
         catch(Exception e)
         {
+            logger.severe("Excepcion no controlada");
             e.printStackTrace();
             endConnection = true;
         }

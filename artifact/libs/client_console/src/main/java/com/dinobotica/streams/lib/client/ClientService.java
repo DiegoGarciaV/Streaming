@@ -2,11 +2,7 @@ package com.dinobotica.streams.lib.client;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Arrays;
@@ -46,14 +42,13 @@ public class ClientService {
         {
             dataOut.write(message);
             dataOut.flush();
-            byte lectura[] = new byte[Constants.BUFFER_SIZE];
-            dataIn.read(lectura);
+            byte[] lectura = new byte[Constants.BUFFER_SIZE];
+            int readSize = dataIn.read(lectura);
 
-            int k = 0;
-            while((k < (Constants.BUFFER_SIZE)-3) && (lectura[k++] != 0 || lectura[k+1] != 0  || lectura[k+2] != 0  || lectura[k+3] != 0));
-            byte[] datareaded = Arrays.copyOf(lectura, k);
+            
+            byte[] datareaded = Arrays.copyOf(lectura, readSize);
 
-            response = new String(lectura);
+            response = new String(datareaded);
             connected = !response.equals("Fin de la conexion\n");
 
         }

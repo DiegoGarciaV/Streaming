@@ -1,13 +1,16 @@
 package com.dinobotica.streams.lib.client;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
-import com.dinobotica.streams.lib.client.ClientService;
 
 public class Comunications {
 
     private ClientService clientService;
     private final String END_MESSAJE = "_END_OF_MSG_";
+
+    private final Logger logger = Logger.getLogger(Comunications.class.getName());
+
 
     public ClientService getClientService() {
         return clientService;

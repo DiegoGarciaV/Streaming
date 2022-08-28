@@ -1,12 +1,9 @@
 package com.dinobotica.streams.lib.client;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Base64;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
@@ -14,7 +11,6 @@ import javax.imageio.ImageIO;
 import com.dinobotica.streams.dto.MessageDTO;
 import com.dinobotica.streams.dto.Constants;
 import com.github.sarxos.webcam.Webcam;
-import com.github.sarxos.webcam.WebcamResolution;
 
 public class ChunkSender implements Runnable{
     
@@ -53,13 +49,16 @@ public class ChunkSender implements Runnable{
                     num++;
                     messageDTO.setMessage(mean+":"+num);
                     messageDTO.getBuffer()[frameIndex] = baos.toByteArray();
-                    baos.close(); 
                     if(clientService!=null)
                         clientService.sendData(baos.toByteArray());
+                    baos.close(); 
                     ImageIO.write(frame, "JPG", new FileOutputStream("foto.jpg"));
                     
                 }
-                catch(Exception e){ e.printStackTrace();}
+                catch(Exception e){ 
+                    logger.severe("Ha ocurrido una exepcion");
+                    e.printStackTrace();
+                }
             }
             
         }

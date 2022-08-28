@@ -6,15 +6,22 @@
     <groupId>com.dinobotica.streams</groupId>
     <artifactId>streaming-video</artifactId>
     <version>1.0.0</version>
+	<relativePath>../..</relativePath>
   </parent>
-	<groupId>com.dinobotica.streams</groupId>
-	<artifactId>LIBRARIES-streaming-video</artifactId>
-	<version>0.0.0</version>
-	<packaging>pom</packaging>
-	<name>LIBRARIES-streaming-video</name>
-	<modules>
-		<module>server_receiver</module>
-		<module>client_console</module>
-		<module>video_sender</module>
-	</modules>
+<groupId>com.dinobotica.streams</groupId>
+<artifactId>LIBRARIES-streaming-video</artifactId>
+<version>0.0.0</version>
+<packaging>pom</packaging>
+<name>LIBRARIES-streaming-video</name>
+
+<properties>
+	<maven.compiler.source>1.8</maven.compiler.source>
+	<maven.compiler.target>1.8</maven.compiler.target>
+</properties>
+
+<modules>
+	<module>server_receiver</module>
+	<module>client_console</module>
+	<module>video_sender</module>
+</modules>
 </project>
