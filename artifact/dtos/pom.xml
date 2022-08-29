@@ -21,5 +21,6 @@
 <modules>
 	<module>message</module>
   <module>constants</module>
+  <module>frame</module>
 </modules>
 </project>

@@ -6,3 +6,4 @@ artifact/*/*/target/
 target/dtos
 *.jpg
 *.png
+frames/tmp

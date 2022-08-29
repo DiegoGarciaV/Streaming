@@ -3,19 +3,23 @@ package com.dinobotica.streams.lib.server;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.logging.Logger;
-
 import javax.imageio.ImageIO;
 
 import com.dinobotica.streams.dto.Constants;
 import com.dinobotica.streams.dto.MessageDTO;
+
 
 public class ConnectionAttender implements Runnable{
 
@@ -78,8 +82,16 @@ public class ConnectionAttender implements Runnable{
             byte[] datareaded = Arrays.copyOf(lectura, readSize);
             getString(new String(datareaded));
             BufferedImage newBi = ImageIO.read(new ByteArrayInputStream(datareaded));
+
             if(newBi!=null)
+            {
                 ImageIO.write(newBi, "JPG", new FileOutputStream("foto_serv.jpg"));
+                String img64 = Base64.getEncoder().encodeToString(datareaded);
+                BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_01.json",true),Constants.BUFFER_SIZE);
+                frameWriter.write(("{ \"frame\": \"" + img64 + "\"},").getBytes());
+                frameWriter.close();
+            }
+            
             
         } 
         catch(EOFException e)
