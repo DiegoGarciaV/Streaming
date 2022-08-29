@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<groupId>com.dinobotica.streams</groupId>
+	<artifactId>streaming-video</artifactId>
+	<version>1.0.0</version>
+	<packaging>pom</packaging>
+	<name>Infraestructura de conexion para streaming</name>
+	<description>Se crea la infraesctructura para establecer conexion TCP entre una PC local y un host que transmitira video en tiempo real</description>
+	<properties>
+		<java.version>8</java.version>
+		<outputDirectoryDTOs>../../../target/dtos</outputDirectoryDTOs>
+		<outputDirectoryLibraries>../../../target/libraries</outputDirectoryLibraries>
+	</properties>
+
+	
+	<dependencies>
+		
+
+		
+	</dependencies>
+
+	
+
+
+	<modules>  
+		<module>artifact/dtos</module>
+		<module>artifact/libs</module>
+  	</modules>
+</project>
