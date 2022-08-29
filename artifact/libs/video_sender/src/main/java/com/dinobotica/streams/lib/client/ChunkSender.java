@@ -41,13 +41,8 @@ public class ChunkSender implements Runnable{
                 try
                 {
                     ImageIO.write(frame, "JPG", baos );
-                    double mean = Double.parseDouble(messageDTO.getMessage().split(":")[0]);
-                    int num = Integer.parseInt(messageDTO.getMessage().split(":")[1]);
-
-                    mean = num*mean + frameIndex;
-                    mean = mean/(num+1);
-                    num++;
-                    messageDTO.setMessage(mean+":"+num);
+                    int num = Integer.parseInt(messageDTO.getMessage())+1;
+                    messageDTO.setMessage("" + num);
                     messageDTO.getBuffer()[frameIndex] = baos.toByteArray();
                     if(clientService!=null)
                         clientService.sendData(baos.toByteArray());

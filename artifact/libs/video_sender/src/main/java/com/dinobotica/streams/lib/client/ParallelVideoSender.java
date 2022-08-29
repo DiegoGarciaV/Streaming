@@ -34,7 +34,7 @@ public class ParallelVideoSender{
 
         long frames = Constants.FRAME_RATE;
         logger.info("Capturando");
-        this.messageDTO.setMessage("0:0");
+        this.messageDTO.setMessage("0");
         try
         {
             ClientService clientService = new ClientService(host,port);
@@ -42,7 +42,7 @@ public class ParallelVideoSender{
             {
                 new Thread(new ChunkSender(webcam,i,messageDTO,clientService)).start();
             }
-            while(Double.parseDouble(messageDTO.getMessage().split(":")[0])<(frames)/2);
+            while(Integer.parseInt(messageDTO.getMessage())<(frames));
             clientService.sendData("_END_OF_MSG_".getBytes());
             clientService.closeConnection();
         }

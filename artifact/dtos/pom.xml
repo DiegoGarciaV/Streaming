@@ -20,5 +20,6 @@
 </properties>
 <modules>
 	<module>message</module>
+  <module>constants</module>
 </modules>
 </project>

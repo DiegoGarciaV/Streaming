@@ -44,12 +44,13 @@ public class ClientService {
             dataOut.flush();
             byte[] lectura = new byte[Constants.BUFFER_SIZE];
             int readSize = dataIn.read(lectura);
-
+            if(readSize>0)
+            {
+                byte[] datareaded = Arrays.copyOf(lectura, readSize);
+                response = new String(datareaded);
+                connected = !response.equals("Fin de la conexion\n");
+            }
             
-            byte[] datareaded = Arrays.copyOf(lectura, readSize);
-
-            response = new String(datareaded);
-            connected = !response.equals("Fin de la conexion\n");
 
         }
         catch(SocketException SoE)
