@@ -23,6 +23,8 @@ public class Comunications {
 
         try
         {
+            server = (server.equals("") ? "localhost" : server) ;   
+            port = (port == 0 ? 6666 : port);
             clientService = new ClientService(server, port);
         }
         catch(IOException IoE)

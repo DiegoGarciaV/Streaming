@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 public class MessageDTO implements Serializable{
     
-    private final long id = 1029373456L;
     private String message;
     private byte buffer[][] = new byte[Constants.FRAME_RATE][];
 
