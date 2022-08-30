@@ -12,31 +12,46 @@
         <section>
             <p id="message"></p>
             <canvas id="canva" width="640px" height="480px"></canvas>
+            <div class="text"></div>
         </section>
     </body>
     <script type="text/javascript" src="frames/tmp/FramesChunk_01.json"></script>
     <script type="text/javascript">
 
-       
-        const mydata = JSON.parse(frames);
-        console.log(mydata)
+        /*
+        const TXT_URL = 'https://www.mozilla.org/media/MPL/2.0/index.815ca599c9df.txt';
+
+        $.ajax
+        (
+            {
+                url : TXT_URL,
+                dataType: "text",
+                success : function (data) 
+                {
+                    $(".text").html("<pre>"+data+"</pre>");
+                }
+            }
+        );*/
+        const frameChunk = JSON.parse(frames);
 
         var canvas = document.getElementById("canva");
         var ctx = canvas.getContext("2d");
 
-        
-        mydata.forEach((element,index) => {
+        let initTime =  frameChunk[0].time*1;
+        frameChunk.forEach((element,index) => {
             
             var image = new Image();
-            image.src = "data:image/jpg;base64," + mydata[index].frame;
+            image.src = "data:image/jpg;base64," +element.image;
             image.onload = () => {
-
+                const displayTime = element.time - initTime;
                 setTimeout(() => {
                     ctx.drawImage(image, 0, 0);
-                }, 60*index);
+                    //console.info(element.frameIndex);
+                }, displayTime);
             };
         });
 
+        console.log(frameChunk.length/(frameChunk[frameChunk.length-1].time*1 - initTime)*1000);
 
         
     </script>

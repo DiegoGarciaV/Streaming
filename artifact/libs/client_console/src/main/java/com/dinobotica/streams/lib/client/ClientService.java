@@ -76,6 +76,39 @@ public class ClientService {
         return response;
     }
 
+    public void sendDataNonResponse(byte[] message)
+    {
+        try
+        {
+            if(message!=null)
+            {
+                dataOut.write(message);
+                dataOut.flush();
+            }
+
+        }
+        catch(SocketException SoE)
+        {
+            logger.severe("Ha ocurrido un problema con la conexion.");
+            if(clientSocket.isConnected())
+            {
+                logger.severe("El servidor ha cerrado la conexión");
+                connected = false;
+
+            }
+        }
+        catch(IOException IoE)
+        {
+            logger.severe("Ha ocurrido un problema durante la transmisión del mensaje.");
+            IoE.printStackTrace();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        
+    }
+
     public void closeConnection()
     {
         try

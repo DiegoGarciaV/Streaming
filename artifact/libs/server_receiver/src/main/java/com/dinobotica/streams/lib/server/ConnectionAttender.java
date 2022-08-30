@@ -78,17 +78,25 @@ public class ConnectionAttender implements Runnable{
         {
             byte[] lectura = new byte[Constants.BUFFER_SIZE];
             int readSize = dataIn.read(lectura);
-
-            byte[] datareaded = Arrays.copyOf(lectura, readSize);
+            lectura[readSize] = ',';
+            byte[] datareaded = Arrays.copyOf(lectura, readSize+1);
             getString(new String(datareaded));
+            
+            /* 
             BufferedImage newBi = ImageIO.read(new ByteArrayInputStream(datareaded));
-
             if(newBi!=null)
             {
                 ImageIO.write(newBi, "JPG", new FileOutputStream("foto_serv.jpg"));
                 String img64 = Base64.getEncoder().encodeToString(datareaded);
                 BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_01.json",true),Constants.BUFFER_SIZE);
                 frameWriter.write(("{ \"frame\": \"" + img64 + "\"},").getBytes());
+                frameWriter.close();
+            }*/
+
+            if(readSize > 0)
+            {
+                BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_01.json",true),Constants.BUFFER_SIZE);
+                frameWriter.write(datareaded);
                 frameWriter.close();
             }
             

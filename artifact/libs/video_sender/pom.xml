@@ -27,6 +27,11 @@
 			<version>0.0.0</version>
 		</dependency>
 		<dependency>
+			<groupId>com.dinobotica.streams.dto</groupId>
+			<artifactId>frame</artifactId>
+			<version>0.0.0</version>
+		</dependency>
+		<dependency>
 			<groupId>com.github.sarxos</groupId>
 			<artifactId>webcam-capture</artifactId>
 			<version>0.3.12</version>

@@ -1,6 +1,7 @@
 package com.dinobotica.streams.lib.client;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 import com.dinobotica.streams.dto.Constants;
@@ -23,6 +24,7 @@ public class ParallelVideoSender{
         this.host = host;
         this.port = port;
         messageDTO.setMessage("");
+        messageDTO.setParams(new HashMap<String,Object>());
     }
 
     public void takePicture()
@@ -34,7 +36,9 @@ public class ParallelVideoSender{
 
         long frames = Constants.FRAME_RATE;
         logger.info("Capturando");
-        this.messageDTO.setMessage("0");
+        messageDTO.getParams().put("framesCount", 0);
+        messageDTO.getParams().put("ChunkCount", 0);
+        
         try
         {
             ClientService clientService = new ClientService(host,port);
@@ -44,7 +48,7 @@ public class ParallelVideoSender{
                 //ChunkSender chunkSender = new ChunkSender(webcam,i,messageDTO,clientService);
                 //chunkSender.run();
             }
-            while(Integer.parseInt(messageDTO.getMessage())<(frames));
+            while((Integer)messageDTO.getParams().get("framesCount")<(frames));
             clientService.sendData("_END_OF_MSG_".getBytes());
             clientService.closeConnection();
         }
