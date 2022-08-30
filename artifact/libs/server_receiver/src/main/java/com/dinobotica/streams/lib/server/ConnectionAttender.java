@@ -29,6 +29,8 @@ public class ConnectionAttender implements Runnable{
     private boolean endConnection = false;
     private MessageDTO messageDTO;
 
+    private String currentChunk = "-1";
+
     private static final String END_MESSAJE = "_END_OF_MSG_";
     private static final String SET_DATA = "_SET_";
     private static final String GET_DATA = "_GET_";
@@ -78,8 +80,7 @@ public class ConnectionAttender implements Runnable{
         {
             byte[] lectura = new byte[Constants.BUFFER_SIZE];
             int readSize = dataIn.read(lectura);
-            lectura[readSize] = ',';
-            byte[] datareaded = Arrays.copyOf(lectura, readSize+1);
+            byte[] datareaded = Arrays.copyOf(lectura, readSize);
             getString(new String(datareaded));
             
             /* 
@@ -96,9 +97,34 @@ public class ConnectionAttender implements Runnable{
             String formatedChunkId = String.format("%04d", Integer.parseInt(chunkId));
             if(readSize > 0)
             {
-                BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json",true),Constants.BUFFER_SIZE);
-                frameWriter.write(datareaded);
-                frameWriter.close();
+
+                
+                if(currentChunk.equals("-1"))
+                {
+                    BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json"),Constants.BUFFER_SIZE);
+                    frameWriter.write("frames= '[".getBytes());
+                    frameWriter.write(datareaded);
+                    frameWriter.close();
+                }
+                else if(currentChunk.equals(formatedChunkId))
+                {
+                    BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json",true),Constants.BUFFER_SIZE);
+                    frameWriter.write(",".getBytes());
+                    frameWriter.write(datareaded);
+                    frameWriter.close();
+                }
+                else
+                {
+                    BufferedOutputStream lastFrameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + currentChunk + ".json",true),Constants.BUFFER_SIZE);
+                    BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json"),Constants.BUFFER_SIZE);
+                    lastFrameWriter.write("]';".getBytes());
+                    lastFrameWriter.close();
+                    frameWriter.write("frames= '[".getBytes());
+                    frameWriter.write(datareaded);
+                    frameWriter.close();
+                }
+                currentChunk = formatedChunkId;
+                
             }
             
             
