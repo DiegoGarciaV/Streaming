@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <title>Prueba de velocidad API Rest</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    </head>
+    <body>
+        <header>
+
+        </header>
+        <section>
+            <p id="message"></p>
+            <canvas id="canva" width="640px" height="480px"></canvas>
+        </section>
+    </body>
+    <script type="text/javascript" src="frames/tmp/FramesChunk_01.json"></script>
+    <script type="text/javascript">
+
+       
+        const mydata = JSON.parse(frames);
+        console.log(mydata)
+
+        var canvas = document.getElementById("canva");
+        var ctx = canvas.getContext("2d");
+
+        
+        mydata.forEach((element,index) => {
+            
+            var image = new Image();
+            image.src = "data:image/jpg;base64," + mydata[index].frame;
+            image.onload = () => {
+
+                setTimeout(() => {
+                    ctx.drawImage(image, 0, 0);
+                }, 60*index);
+            };
+        });
+
+
+        
+    </script>
+</html>

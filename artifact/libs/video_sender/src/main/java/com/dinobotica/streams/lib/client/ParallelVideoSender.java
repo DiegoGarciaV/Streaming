@@ -41,6 +41,8 @@ public class ParallelVideoSender{
             for(int i=0;i<frames;i++)
             {
                 new Thread(new ChunkSender(webcam,i,messageDTO,clientService)).start();
+                //ChunkSender chunkSender = new ChunkSender(webcam,i,messageDTO,clientService);
+                //chunkSender.run();
             }
             while(Integer.parseInt(messageDTO.getMessage())<(frames));
             clientService.sendData("_END_OF_MSG_".getBytes());
