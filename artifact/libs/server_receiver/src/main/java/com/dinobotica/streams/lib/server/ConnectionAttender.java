@@ -92,10 +92,11 @@ public class ConnectionAttender implements Runnable{
                 frameWriter.write(("{ \"frame\": \"" + img64 + "\"},").getBytes());
                 frameWriter.close();
             }*/
-
+            String chunkId = new String(datareaded).split(":")[1].replace(",\"time\"", "").replace(" ", "");
+            String formatedChunkId = String.format("%04d", Integer.parseInt(chunkId));
             if(readSize > 0)
             {
-                BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_01.json",true),Constants.BUFFER_SIZE);
+                BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json",true),Constants.BUFFER_SIZE);
                 frameWriter.write(datareaded);
                 frameWriter.close();
             }

@@ -37,20 +37,27 @@ public class ParallelVideoSender{
         long frames = Constants.FRAME_RATE;
         logger.info("Capturando");
         messageDTO.getParams().put("framesCount", 0);
-        messageDTO.getParams().put("ChunkCount", 0);
+        messageDTO.getParams().put("ChunkCount", 1L);
         
         try
         {
             ClientService clientService = new ClientService(host,port);
-            for(int i=0;i<frames;i++)
+            for(int j = 0;j<10;j++)
             {
-                new Thread(new ChunkSender(webcam,i,messageDTO,clientService)).start();
-                //ChunkSender chunkSender = new ChunkSender(webcam,i,messageDTO,clientService);
-                //chunkSender.run();
+                for(int i=0;i<frames;i++)
+                {
+                    new Thread(new ChunkSender(webcam,i,messageDTO,clientService)).start();
+                    //ChunkSender chunkSender = new ChunkSender(webcam,i,messageDTO,clientService);
+                    //chunkSender.run();
+                }
+                while((Integer)messageDTO.getParams().get("framesCount")<(frames));
+                
+                messageDTO.getParams().replace("ChunkCount", (long)messageDTO.getParams().get("ChunkCount") + 1);
+                messageDTO.getParams().replace("framesCount", 0);
             }
-            while((Integer)messageDTO.getParams().get("framesCount")<(frames));
             clientService.sendData("_END_OF_MSG_".getBytes());
             clientService.closeConnection();
+                
         }
         catch(IOException e){
             e.printStackTrace();
