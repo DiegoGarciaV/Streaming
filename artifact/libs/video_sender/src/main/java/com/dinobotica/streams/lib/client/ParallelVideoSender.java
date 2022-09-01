@@ -3,6 +3,7 @@ package com.dinobotica.streams.lib.client;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Logger;
+import java.awt.Dimension;
 
 import com.dinobotica.streams.dto.Constants;
 import com.dinobotica.streams.dto.MessageDTO;
@@ -27,10 +28,14 @@ public class ParallelVideoSender{
         messageDTO.setParams(new HashMap<String,Object>());
     }
 
+    
     public void takePicture()
     {
-        Webcam webcam = Webcam.getDefault();
-        webcam.setViewSize(WebcamResolution.VGA.getSize());
+        Webcam webcam = Webcam.getDefault();    
+        Dimension FullHD = WebcamResolution.WVGA.getSize();
+        webcam.setCustomViewSizes(FullHD);
+        webcam.setViewSize(FullHD);
+        // webcam.setViewSize(WebcamResolution.VGA.getSize());
         while(!webcam.open());
         
 
@@ -42,13 +47,13 @@ public class ParallelVideoSender{
         try
         {
             ClientService clientService = new ClientService(host,port);
-            for(int j = 0;j<10;j++)
+            for(int j = 0;j<15;j++)
             {
                 for(int i=0;i<frames;i++)
                 {
                     new Thread(new ChunkSender(webcam,i,messageDTO,clientService)).start();
-                    //ChunkSender chunkSender = new ChunkSender(webcam,i,messageDTO,clientService);
-                    //chunkSender.run();
+                    // ChunkSender chunkSender = new ChunkSender(webcam,i,messageDTO,clientService);
+                    // chunkSender.run();
                 }
                 while((Integer)messageDTO.getParams().get("framesCount")<(frames));
                 

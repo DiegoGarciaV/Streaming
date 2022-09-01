@@ -11,47 +11,70 @@
         </header>
         <section>
             <p id="message"></p>
-            <canvas id="canva" width="640px" height="480px"></canvas>
+            <canvas id="canva" width="1920px" height="1080px"></canvas>
             <div class="text"></div>
         </section>
     </body>
-    <script type="text/javascript" src="frames/tmp//20220830/FramesChunk_0005.json"></script>
     <script type="text/javascript">
 
-        /*
-        const TXT_URL = 'https://www.mozilla.org/media/MPL/2.0/index.815ca599c9df.txt';
+        
+        let frameChunk = [];
+        let availableChunks = true;
+        let runingFramePlay = false;
+        let acumulatedTime = 0;
+        let auxAcumTime = 0;
+        let chunkId = 1;
+        while(availableChunks && chunkId <= 15)
+        {
+            const TXT_URL = 'http://localhost:8080/api/v0/frames/getFramesChunk/00';
+            let chunkIdString = (chunkId < 10 ? "0" + chunkId : "" + chunkId);
+            setTimeout(() => {
 
-        $.ajax
-        (
-            {
-                url : TXT_URL,
-                dataType: "text",
-                success : function (data) 
-                {
-                    $(".text").html("<pre>"+data+"</pre>");
-                }
-            }
-        );*/
-        const frameChunk = JSON.parse(frames);
-
-        var canvas = document.getElementById("canva");
-        var ctx = canvas.getContext("2d");
-
-        let initTime =  frameChunk[0].time*1;
-        frameChunk.forEach((element,index) => {
+                $.ajax
+                (
+                    {
+                        url : TXT_URL + chunkIdString,
+                        dataType: "text",
+                        success : function (data) 
+                        {
+                            playVideo(JSON.parse(data),acumulatedTime);
+                        },
+                        error: (err) =>{
+                            console.error(err);
+                            availableChunks = false;
+                            console.log(chunkId);
+                        }
+                    }
+                );
+                        
+                
+            }, 400*chunkId);
+            chunkId = chunkId + 1;
+        }
             
-            var image = new Image();
-            image.src = "data:image/jpg;base64," +element.image;
-            image.onload = () => {
-                const displayTime = element.time - initTime;
-                setTimeout(() => {
-                    ctx.drawImage(image, 0, 0);
-                    //console.info(element.frameIndex);
-                }, displayTime);
-            };
-        });
 
-        console.log(frameChunk.length/(frameChunk[frameChunk.length-1].time*1 - initTime)*1000);
+        function playVideo(newFrameChunk, acumTime){
+
+            runingFramePlay = true;
+            var canvas = document.getElementById("canva");
+            var ctx = canvas.getContext("2d");
+            let initTime =  newFrameChunk[0].time*1;
+            newFrameChunk.forEach((element,index) => {
+                var image = new Image();
+                image.src = "data:image/jpg;base64," +element.image;
+                    auxAcumTime = element.time - initTime + acumTime;
+                image.onload = () => {
+                    
+                    const displayTime = element.time - initTime + acumTime;
+                    setTimeout(() => {
+                        ctx.drawImage(image, 0, 0);
+                        console.log(element.chunkId)
+                    }, displayTime);
+                }; 
+            });
+            acumulatedTime = auxAcumTime;
+        }
+        
 
         
     </script>

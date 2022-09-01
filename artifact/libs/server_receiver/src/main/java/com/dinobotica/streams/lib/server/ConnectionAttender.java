@@ -75,34 +75,42 @@ public class ConnectionAttender implements Runnable{
 
     private void socketCommunication()
     {
-
         try 
         {
             byte[] lectura = new byte[Constants.BUFFER_SIZE];
             int readSize = dataIn.read(lectura);
             byte[] datareaded = Arrays.copyOf(lectura, readSize);
-            getString(new String(datareaded));
-            
-            /* 
-            BufferedImage newBi = ImageIO.read(new ByteArrayInputStream(datareaded));
-            if(newBi!=null)
+            String stringDataReaded = new String(datareaded);
+            getString(stringDataReaded);
+            String chunkId = "-2";
+            String formatedChunkId = "-2";
+            boolean chunkToRead = false;
+            if(!endConnection)
+                chunkToRead = true;
+            else
             {
-                ImageIO.write(newBi, "JPG", new FileOutputStream("foto_serv.jpg"));
-                String img64 = Base64.getEncoder().encodeToString(datareaded);
-                BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_01.json",true),Constants.BUFFER_SIZE);
-                frameWriter.write(("{ \"frame\": \"" + img64 + "\"},").getBytes());
-                frameWriter.close();
-            }*/
-            String chunkId = new String(datareaded).split(":")[1].replace(",\"time\"", "").replace(" ", "");
-            String formatedChunkId = String.format("%04d", Integer.parseInt(chunkId));
-            if(readSize > 0)
+                BufferedOutputStream lastFrameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + currentChunk + ".json",true),Constants.BUFFER_SIZE);
+                lastFrameWriter.write("]".getBytes());
+                lastFrameWriter.close();
+            }
+
+            
+            if(readSize > 0 && chunkToRead)
             {
 
-                
+                if(stringDataReaded.contains("chunkId"))
+                {
+                    chunkId = stringDataReaded.split(":")[1].replace(",\"time\"", "").replace(" ", "");
+                    formatedChunkId = String.format("%04d", Integer.parseInt(chunkId));
+                }
+                else
+                {
+                    formatedChunkId = currentChunk;
+                }
                 if(currentChunk.equals("-1"))
                 {
                     BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json"),Constants.BUFFER_SIZE);
-                    frameWriter.write("frames= '[".getBytes());
+                    frameWriter.write("[".getBytes());
                     frameWriter.write(datareaded);
                     frameWriter.close();
                 }
@@ -117,9 +125,9 @@ public class ConnectionAttender implements Runnable{
                 {
                     BufferedOutputStream lastFrameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + currentChunk + ".json",true),Constants.BUFFER_SIZE);
                     BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json"),Constants.BUFFER_SIZE);
-                    lastFrameWriter.write("]';".getBytes());
+                    lastFrameWriter.write("]".getBytes());
                     lastFrameWriter.close();
-                    frameWriter.write("frames= '[".getBytes());
+                    frameWriter.write("[".getBytes());
                     frameWriter.write(datareaded);
                     frameWriter.close();
                 }
