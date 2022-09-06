@@ -57,11 +57,12 @@ public class ParallelVideoSender{
                     // ChunkSender chunkSender = new ChunkSender(webcam,i,messageDTO,clientService);
                     // chunkSender.run();
                 }
-                while((Integer)messageDTO.getParams().get(FRAMES_COUNT)<(frames));
                 
-                messageDTO.getParams().replace(CHUNK_COUNT, (long)messageDTO.getParams().get(CHUNK_COUNT) + 1);
-                messageDTO.getParams().replace(FRAMES_COUNT, 0);
+                
+                messageDTO.getParams().replace(CHUNK_COUNT,(Long)messageDTO.getParams().get(CHUNK_COUNT) + 1);
+                //messageDTO.getParams().replace(FRAMES_COUNT, 0);
             }
+            while((Integer)messageDTO.getParams().get(FRAMES_COUNT)<(frames*15));
             clientService.sendData("_END_OF_MSG_".getBytes());
             clientService.closeConnection();
                 

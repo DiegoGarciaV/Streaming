@@ -16,6 +16,8 @@ import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
@@ -37,6 +39,8 @@ public class ConnectionAttender implements Runnable{
     private static final String SET_DATA = "_SET_";
     private static final String GET_DATA = "_GET_";
     private static final String SEPARATOR = "_M_";
+
+    private Map<String,Integer> chunksCounter = new HashMap<String,Integer>();
 
     int contador = 0;
 
@@ -118,7 +122,9 @@ public class ConnectionAttender implements Runnable{
                     BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json"),Constants.BUFFER_SIZE);
                     ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
                     concatBytes.write("[".getBytes());
+                    concatBytes.flush();
                     concatBytes.write(datareaded);
+                    concatBytes.flush();
                     frameWriter.write(concatBytes.toByteArray());
                     frameWriter.close();
                 }
@@ -127,7 +133,9 @@ public class ConnectionAttender implements Runnable{
                     BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json",true),Constants.BUFFER_SIZE);
                     ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
                     concatBytes.write(",".getBytes());
+                    concatBytes.flush();
                     concatBytes.write(datareaded);
+                    concatBytes.flush();
                     frameWriter.write(concatBytes.toByteArray());
                     frameWriter.close();
                 }
@@ -139,7 +147,9 @@ public class ConnectionAttender implements Runnable{
                     lastFrameWriter.close();
                     ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
                     concatBytes.write("[".getBytes());
+                    concatBytes.flush();
                     concatBytes.write(datareaded);
+                    concatBytes.flush();
                     frameWriter.write(concatBytes.toByteArray());
                     frameWriter.close();
                 }
