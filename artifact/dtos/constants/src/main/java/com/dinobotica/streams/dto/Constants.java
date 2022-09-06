@@ -6,5 +6,10 @@ public class Constants {
 
     public static final int BUFFER_SIZE = 1024<<16;
     public static final int FRAME_RATE = 45;
-    public static final String FRAMES_PATH = "frames/tmp/" + LocalDateTime.now().getYear() + (LocalDateTime.now().getMonthValue()<10 ? "0" + LocalDateTime.now().getMonthValue() : LocalDateTime.now().getMonthValue()) + LocalDateTime.now().getDayOfMonth() + "/";
+
+    private static final String TODAY_YEAR = "" + LocalDateTime.now().getYear();
+    private static final String TODAY_MONTH = "" +  (LocalDateTime.now().getMonthValue()< 10 ? "0" + LocalDateTime.now().getMonthValue() : LocalDateTime.now().getMonthValue());
+    private static final String TODAY = "" +  (LocalDateTime.now().getDayOfMonth() < 10 ? "0" + LocalDateTime.now().getDayOfMonth() : LocalDateTime.now().getDayOfMonth());
+    
+    public static final String FRAMES_PATH = "frames/tmp/" + TODAY_YEAR + TODAY_MONTH + TODAY + "/";
 }

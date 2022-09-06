@@ -6,6 +6,7 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -85,6 +86,10 @@ public class ConnectionAttender implements Runnable{
             String chunkId = "-2";
             String formatedChunkId = "-2";
             boolean chunkToRead = false;
+            File framesDir = new File(Constants.FRAMES_PATH);
+            if (!framesDir.exists() && !framesDir.mkdirs()) {
+                logger.info("Error al crear directorio de frames");
+            }
             if(!endConnection)
                 chunkToRead = true;
             else
