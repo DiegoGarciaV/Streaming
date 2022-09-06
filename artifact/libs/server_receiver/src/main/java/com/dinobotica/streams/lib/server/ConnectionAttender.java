@@ -5,6 +5,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -115,13 +116,19 @@ public class ConnectionAttender implements Runnable{
                 if(currentChunk.equals("-1"))
                 {
                     BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json"),Constants.BUFFER_SIZE);
-                    frameWriter.write((new String("[" + datareaded)).getBytes());
+                    ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
+                    concatBytes.write("[".getBytes());
+                    concatBytes.write(datareaded);
+                    frameWriter.write(concatBytes.toByteArray());
                     frameWriter.close();
                 }
                 else if(currentChunk.equals(formatedChunkId))
                 {
                     BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json",true),Constants.BUFFER_SIZE);
-                    frameWriter.write((new String("," + datareaded)).getBytes());
+                    ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
+                    concatBytes.write(",".getBytes());
+                    concatBytes.write(datareaded);
+                    frameWriter.write(concatBytes.toByteArray());
                     frameWriter.close();
                 }
                 else
@@ -130,8 +137,10 @@ public class ConnectionAttender implements Runnable{
                     BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json"),Constants.BUFFER_SIZE);
                     lastFrameWriter.write("]".getBytes());
                     lastFrameWriter.close();
-                    frameWriter.write("[".getBytes());
-                    frameWriter.write((new String("[" + datareaded)).getBytes());
+                    ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
+                    concatBytes.write("[".getBytes());
+                    concatBytes.write(datareaded);
+                    frameWriter.write(concatBytes.toByteArray());
                     frameWriter.close();
                 }
                 currentChunk = formatedChunkId;
