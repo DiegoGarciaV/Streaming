@@ -115,15 +115,13 @@ public class ConnectionAttender implements Runnable{
                 if(currentChunk.equals("-1"))
                 {
                     BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json"),Constants.BUFFER_SIZE);
-                    frameWriter.write("[".getBytes());
-                    frameWriter.write(datareaded);
+                    frameWriter.write((new String("[" + datareaded)).getBytes());
                     frameWriter.close();
                 }
                 else if(currentChunk.equals(formatedChunkId))
                 {
                     BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json",true),Constants.BUFFER_SIZE);
-                    frameWriter.write(",".getBytes());
-                    frameWriter.write(datareaded);
+                    frameWriter.write((new String("," + datareaded)).getBytes());
                     frameWriter.close();
                 }
                 else
@@ -133,7 +131,7 @@ public class ConnectionAttender implements Runnable{
                     lastFrameWriter.write("]".getBytes());
                     lastFrameWriter.close();
                     frameWriter.write("[".getBytes());
-                    frameWriter.write(datareaded);
+                    frameWriter.write((new String("[" + datareaded)).getBytes());
                     frameWriter.close();
                 }
                 currentChunk = formatedChunkId;
