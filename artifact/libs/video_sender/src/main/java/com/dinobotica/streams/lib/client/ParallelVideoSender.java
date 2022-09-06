@@ -76,7 +76,8 @@ public class ParallelVideoSender{
     public static void main(String[] args) {
         
         String servidor = args[0];
-        ParallelVideoSender parallelVideoSender = new ParallelVideoSender(servidor, 6666);
+        int port = Integer.parseInt(args[1]);
+        ParallelVideoSender parallelVideoSender = new ParallelVideoSender(servidor, port);
         parallelVideoSender.takePicture();
     }
 

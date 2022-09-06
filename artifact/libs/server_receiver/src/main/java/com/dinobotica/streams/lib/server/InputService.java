@@ -72,7 +72,8 @@ public class InputService{
     public static void main(String[] args) {
         
         InputService inputService = new InputService();
-        inputService.start(6666);
+        int port = Integer.parseInt(args[0]);
+        inputService.start(port);
         inputService.finalizeService();
     }
     
