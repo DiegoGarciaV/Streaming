@@ -2,7 +2,6 @@ package com.dinobotica.streams.lib.client;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.logging.Logger;
@@ -44,19 +43,15 @@ public class ChunkSender implements Runnable{
                 try
                 {
                     ImageIO.write(frame, "JPG", baos );
-                    int num = (Integer)messageDTO.getParams().get("framesCount")+1;
-                    long chunk = (Long)messageDTO.getParams().get("ChunkCount");
+                    int num = (Integer)messageDTO.getParams().get(ParallelVideoSender.FRAMES_COUNT)+1;
+                    long chunk = (Long)messageDTO.getParams().get(ParallelVideoSender.CHUNK_COUNT);
 
-                    messageDTO.getParams().replace("framesCount", num);
+                    messageDTO.getParams().replace(ParallelVideoSender.FRAMES_COUNT, num);
                     String b64Frame = Base64.getEncoder().encodeToString(baos.toByteArray());
                     FrameDTO frameDto = new FrameDTO(chunk,frameTime,b64Frame,frameIndex);
-                    /*
-                    if(clientService!=null)
-                        clientService.sendData(baos.toByteArray()); */
                     if(clientService!=null)
                         clientService.sendDataNonResponse(frameDto.toString().getBytes()); 
                     baos.close(); 
-                    ImageIO.write(frame, "JPG", new FileOutputStream("foto.jpg"));
                     
                 }
                 catch(Exception e){ 

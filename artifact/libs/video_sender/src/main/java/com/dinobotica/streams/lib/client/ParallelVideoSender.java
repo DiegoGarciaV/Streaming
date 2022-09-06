@@ -18,6 +18,9 @@ public class ParallelVideoSender{
     private int port;
     private MessageDTO messageDTO = new MessageDTO();
 
+    public static final String FRAMES_COUNT = "framesCount";
+    public static final String CHUNK_COUNT = "chunkCount";
+
     private final Logger logger = Logger.getLogger(ParallelVideoSender.class.getName());
 
     public ParallelVideoSender(String host, int port)
@@ -25,24 +28,23 @@ public class ParallelVideoSender{
         this.host = host;
         this.port = port;
         messageDTO.setMessage("");
-        messageDTO.setParams(new HashMap<String,Object>());
+        messageDTO.setParams(new HashMap<>());
     }
 
     
     public void takePicture()
     {
         Webcam webcam = Webcam.getDefault();    
-        Dimension FullHD = WebcamResolution.WVGA.getSize();
-        webcam.setCustomViewSizes(FullHD);
-        webcam.setViewSize(FullHD);
-        // webcam.setViewSize(WebcamResolution.VGA.getSize());
+        Dimension fullHD = WebcamResolution.WVGA.getSize();
+        webcam.setCustomViewSizes(fullHD);
+        webcam.setViewSize(fullHD);
         while(!webcam.open());
         
 
         long frames = Constants.FRAME_RATE;
         logger.info("Capturando");
-        messageDTO.getParams().put("framesCount", 0);
-        messageDTO.getParams().put("ChunkCount", 1L);
+        messageDTO.getParams().put(FRAMES_COUNT, 0);
+        messageDTO.getParams().put(CHUNK_COUNT, 1L);
         
         try
         {
@@ -55,10 +57,10 @@ public class ParallelVideoSender{
                     // ChunkSender chunkSender = new ChunkSender(webcam,i,messageDTO,clientService);
                     // chunkSender.run();
                 }
-                while((Integer)messageDTO.getParams().get("framesCount")<(frames));
+                while((Integer)messageDTO.getParams().get(FRAMES_COUNT)<(frames));
                 
-                messageDTO.getParams().replace("ChunkCount", (long)messageDTO.getParams().get("ChunkCount") + 1);
-                messageDTO.getParams().replace("framesCount", 0);
+                messageDTO.getParams().replace(CHUNK_COUNT, (long)messageDTO.getParams().get(CHUNK_COUNT) + 1);
+                messageDTO.getParams().replace(FRAMES_COUNT, 0);
             }
             clientService.sendData("_END_OF_MSG_".getBytes());
             clientService.closeConnection();
@@ -73,7 +75,8 @@ public class ParallelVideoSender{
 
     public static void main(String[] args) {
         
-        ParallelVideoSender parallelVideoSender = new ParallelVideoSender("localhost", 6666);
+        String servidor = args[0];
+        ParallelVideoSender parallelVideoSender = new ParallelVideoSender(servidor, 6666);
         parallelVideoSender.takePicture();
     }
 
