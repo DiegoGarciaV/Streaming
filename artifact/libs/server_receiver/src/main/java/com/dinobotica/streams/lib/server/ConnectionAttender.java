@@ -33,14 +33,12 @@ public class ConnectionAttender implements Runnable{
     private boolean endConnection = false;
     private MessageDTO messageDTO;
 
-    private String currentChunk = "-1";
-
     private static final String END_MESSAJE = "_END_OF_MSG_";
     private static final String SET_DATA = "_SET_";
     private static final String GET_DATA = "_GET_";
     private static final String SEPARATOR = "_M_";
 
-    private Map<String,Integer> chunksCounter = new HashMap<String,Integer>();
+    private Map<String,Float> chunksCounter = new HashMap<String,Float>();
 
     int contador = 0;
 
@@ -88,8 +86,7 @@ public class ConnectionAttender implements Runnable{
             byte[] datareaded = Arrays.copyOf(lectura, readSize);
             String stringDataReaded = new String(datareaded);
             getString(stringDataReaded);
-            String chunkId = "-2";
-            String formatedChunkId = "-2";
+            String chunkId;
             boolean chunkToRead = false;
             File framesDir = new File(Constants.FRAMES_PATH);
             if (!framesDir.exists() && !framesDir.mkdirs()) {
@@ -97,63 +94,35 @@ public class ConnectionAttender implements Runnable{
             }
             if(!endConnection)
                 chunkToRead = true;
-            else
-            {
-                BufferedOutputStream lastFrameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + currentChunk + ".json",true),Constants.BUFFER_SIZE);
-                lastFrameWriter.write("]".getBytes());
-                lastFrameWriter.close();
-            }
-
             
             if(readSize > 0 && chunkToRead)
             {
+                stringDataReaded = stringDataReaded.replaceAll("}\\{", "\\},\\{");
+                datareaded = stringDataReaded.getBytes();
+                //Verificamos que haya solo un cuadro, en caso contrario, se separan
+                String[] frames;
+                if(stringDataReaded.contains("},{"))
+                {   
+                    frames = stringDataReaded.split("\\},\\{");
+                    System.out.println("Existen " + frames.length + " },{");
+                    for(int i = 0; i < frames.length; i++)
+                    {
+                        String frame = frames[i];
+                        if(i==0)
+                            frame = frame + "}";
+                        else if(i < (frames.length-1))
+                            frame = "{" + frame + "}";
+                        else
+                            frame = "{" + frame;
+                        writeReadedChunk(frame.getBytes(),frame);
+                    }
+                }
+                else
+                {
+                    writeReadedChunk(datareaded,stringDataReaded);
+                }
 
-                if(stringDataReaded.contains("chunkId"))
-                {
-                    chunkId = stringDataReaded.split(":")[1].replace(",\"time\"", "").replace(" ", "");
-                    formatedChunkId = String.format("%04d", Integer.parseInt(chunkId));
-                }
-                else
-                {
-                    formatedChunkId = currentChunk;
-                }
-                if(currentChunk.equals("-1"))
-                {
-                    BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json"),Constants.BUFFER_SIZE);
-                    ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
-                    concatBytes.write("[".getBytes());
-                    concatBytes.flush();
-                    concatBytes.write(datareaded);
-                    concatBytes.flush();
-                    frameWriter.write(concatBytes.toByteArray());
-                    frameWriter.close();
-                }
-                else if(currentChunk.equals(formatedChunkId))
-                {
-                    BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json",true),Constants.BUFFER_SIZE);
-                    ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
-                    concatBytes.write(",".getBytes());
-                    concatBytes.flush();
-                    concatBytes.write(datareaded);
-                    concatBytes.flush();
-                    frameWriter.write(concatBytes.toByteArray());
-                    frameWriter.close();
-                }
-                else
-                {
-                    BufferedOutputStream lastFrameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + currentChunk + ".json",true),Constants.BUFFER_SIZE);
-                    BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json"),Constants.BUFFER_SIZE);
-                    lastFrameWriter.write("]".getBytes());
-                    lastFrameWriter.close();
-                    ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
-                    concatBytes.write("[".getBytes());
-                    concatBytes.flush();
-                    concatBytes.write(datareaded);
-                    concatBytes.flush();
-                    frameWriter.write(concatBytes.toByteArray());
-                    frameWriter.close();
-                }
-                currentChunk = formatedChunkId;
+                
                 
             }
             
@@ -213,6 +182,64 @@ public class ConnectionAttender implements Runnable{
                 dataOut.write(("R.- " + longitud).getBytes());
                 dataOut.flush();
             }
+        }
+    }
+
+    private void writeReadedChunk(byte[] datareaded,String stringDataReaded) throws IOException
+    {
+        String chunkId;
+        boolean completeFrame = (stringDataReaded.contains("{") && stringDataReaded.contains("}"));
+        if(stringDataReaded.contains("chunkId"))
+        {
+            chunkId = stringDataReaded.split(":")[1].replace(",\"time\"", "").replace(" ", "");
+            if(chunksCounter.containsKey(chunkId))
+                chunksCounter.replace(chunkId, chunksCounter.get(chunkId) + (completeFrame ? 1.0f : 0.5f));
+            else
+                chunksCounter.put(chunkId, 1.0f);
+
+        }
+        else
+        {
+            int chunkIdInt = Constants.CHUNK_RATE;
+            chunkId = "" + chunkIdInt;
+            for(Map.Entry<String,Float> tupla : chunksCounter.entrySet())
+            {
+                if(tupla.getValue() < 1.0f && Integer.parseInt(tupla.getKey()) < chunkIdInt)
+                {
+                    chunkId = tupla.getKey();
+                    chunkIdInt = Integer.parseInt(chunkId);
+                }
+            }
+        }
+
+        String formatedChunkId = String.format("%04d", Integer.parseInt(chunkId));
+
+        if(chunksCounter.get(chunkId) == 1.0f)
+        {
+            BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json"),Constants.BUFFER_SIZE);
+            ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
+            concatBytes.write("[".getBytes());
+            concatBytes.flush();
+            concatBytes.write(datareaded);
+            concatBytes.flush();
+            frameWriter.write(concatBytes.toByteArray());
+            frameWriter.close();
+        }
+        else if(chunksCounter.get(chunkId) <= Constants.FRAME_RATE)
+        {
+            BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json",true),Constants.BUFFER_SIZE);
+            ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
+            concatBytes.write(",".getBytes());
+            concatBytes.flush();
+            concatBytes.write(datareaded);
+            concatBytes.flush();
+            if(!(chunksCounter.get(chunkId) < Constants.FRAME_RATE))
+            {
+                concatBytes.write("]".getBytes());
+                concatBytes.flush();
+            }
+            frameWriter.write(concatBytes.toByteArray());
+            frameWriter.close();
         }
     }
 

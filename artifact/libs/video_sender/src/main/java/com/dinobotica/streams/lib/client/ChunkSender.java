@@ -17,14 +17,16 @@ public class ChunkSender implements Runnable{
     
     private Webcam webcam;
     private int frameIndex;
+    private int chunkId;
     private MessageDTO messageDTO;
     private ClientService clientService;
     
     private final Logger logger = Logger.getLogger(ChunkSender.class.getName());
 
-    public ChunkSender(Webcam webcam, int frameIndex, MessageDTO messageDTO, ClientService clientService) throws IOException{
+    public ChunkSender(Webcam webcam, int frameIndex, int chunkId, MessageDTO messageDTO, ClientService clientService) throws IOException{
         this.webcam = webcam;
         this.frameIndex = frameIndex;
+        this.chunkId = chunkId;
         this.messageDTO = messageDTO;
         this.clientService = clientService;
     }
@@ -44,11 +46,9 @@ public class ChunkSender implements Runnable{
                 {
                     ImageIO.write(frame, "JPG", baos );
                     int num = (Integer)messageDTO.getParams().get(ParallelVideoSender.FRAMES_COUNT)+1;
-                    long chunk = (Long)messageDTO.getParams().get(ParallelVideoSender.CHUNK_COUNT);
-
                     messageDTO.getParams().replace(ParallelVideoSender.FRAMES_COUNT, num);
                     String b64Frame = Base64.getEncoder().encodeToString(baos.toByteArray());
-                    FrameDTO frameDto = new FrameDTO(chunk,frameTime,b64Frame,frameIndex);
+                    FrameDTO frameDto = new FrameDTO(chunkId+1,frameTime,b64Frame,frameIndex);
                     if(clientService!=null)
                         clientService.sendDataNonResponse(frameDto.toString().getBytes()); 
                     baos.close(); 

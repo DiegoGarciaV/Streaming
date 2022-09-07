@@ -6,6 +6,7 @@ public class Constants {
 
     public static final int BUFFER_SIZE = 1024<<16;
     public static final int FRAME_RATE = 45;
+    public static final int CHUNK_RATE = 15;
 
     private static final String TODAY_YEAR = "" + LocalDateTime.now().getYear();
     private static final String TODAY_MONTH = "" +  (LocalDateTime.now().getMonthValue()< 10 ? "0" + LocalDateTime.now().getMonthValue() : LocalDateTime.now().getMonthValue());
