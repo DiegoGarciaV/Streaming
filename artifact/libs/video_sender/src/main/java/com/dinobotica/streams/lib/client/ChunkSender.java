@@ -50,7 +50,10 @@ public class ChunkSender implements Runnable{
                     String b64Frame = Base64.getEncoder().encodeToString(baos.toByteArray());
                     FrameDTO frameDto = new FrameDTO(chunkId+1,frameTime,b64Frame,frameIndex);
                     if(clientService!=null)
-                        clientService.sendDataNonResponse(frameDto.toString().getBytes()); 
+                    {
+                        clientService.sendDataNonResponse(frameDto.toString().getBytes());
+                        System.out.println(frameDto.toString().length());
+                    } 
                     baos.close(); 
                     
                 }
