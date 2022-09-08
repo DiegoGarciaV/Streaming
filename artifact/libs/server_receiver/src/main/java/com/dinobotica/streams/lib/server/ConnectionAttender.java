@@ -205,7 +205,7 @@ public class ConnectionAttender implements Runnable{
             chunkId = "" + chunkIdInt;
             for(Map.Entry<String,Float> tupla : chunksCounter.entrySet())
             {
-                if(((tupla.getValue() % 1) < 1.0f) && Integer.parseInt(tupla.getKey()) < chunkIdInt)
+                if(((tupla.getValue() % 1) == 0.5f) && Integer.parseInt(tupla.getKey()) < chunkIdInt)
                 {
                     chunkId = tupla.getKey();
                     chunkIdInt = Integer.parseInt(chunkId);
