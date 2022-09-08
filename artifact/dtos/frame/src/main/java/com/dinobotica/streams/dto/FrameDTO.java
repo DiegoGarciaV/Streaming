@@ -8,6 +8,7 @@ public class FrameDTO implements Serializable{
     private long time;
     private String b64Image;
     private int frameIndex;
+    private int frameChunkIndex;
 
     
     public FrameDTO(long chunkId, long time, String b64Image, int frameIndex) {
@@ -42,6 +43,14 @@ public class FrameDTO implements Serializable{
         this.time = time;
     }
 
+    public int getFrameChunkIndex() {
+        return frameChunkIndex;
+    }
+
+    public void setFrameChunkIndex(int frameChunkIndex) {
+        this.frameChunkIndex = frameChunkIndex;
+    }
+
     @Override
     public String toString() {
         StringBuilder toStringClass = new StringBuilder("{ \"chunkId\": ").append(chunkId).append(",");
@@ -50,7 +59,7 @@ public class FrameDTO implements Serializable{
         toStringClass.append("\"image\": \"").append(b64Image).append("\"}");
         return toStringClass.toString();
     }
-    
+
 
 
 }
