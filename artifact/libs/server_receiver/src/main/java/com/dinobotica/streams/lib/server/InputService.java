@@ -69,12 +69,5 @@ public class InputService{
         }
     }
 
-    public static void main(String[] args) {
-        
-        InputService inputService = new InputService();
-        int port = Integer.parseInt(args[0]);
-        inputService.start(port);
-        inputService.finalizeService();
-    }
     
 }
