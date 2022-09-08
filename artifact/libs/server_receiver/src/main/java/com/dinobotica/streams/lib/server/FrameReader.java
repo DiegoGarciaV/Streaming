@@ -3,12 +3,10 @@ package com.dinobotica.streams.lib.server;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.dinobotica.streams.dto.Constants;
@@ -32,7 +30,6 @@ public class FrameReader implements Runnable{
     {
         this.clientSocket = clienSocket;
         this.frameIndex = this.clientSocket.getPort() - Constants.START_PORT;
-        logger.log(Level.INFO,"{0}",frameIndex);
         dataOut = new BufferedOutputStream(clienSocket.getOutputStream());
         dataIn = new BufferedInputStream(clienSocket.getInputStream(),Constants.BUFFER_SIZE);
         
@@ -67,10 +64,6 @@ public class FrameReader implements Runnable{
             String stringDataReaded = new String(datareaded);
 
             getString(stringDataReaded);
-
-            File framesDir = new File(Constants.FRAMES_PATH);
-            if (!framesDir.exists() && !framesDir.mkdirs()) 
-                logger.info("Error al crear directorio de frames");
 
             if(!endConnection && readSize > 0)
                 writeReadedChunk(datareaded,stringDataReaded);
@@ -126,14 +119,12 @@ public class FrameReader implements Runnable{
         try(BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(finalPath,!initalFrame),Constants.BUFFER_SIZE))
         {
             concatBytes.write(initialChar);
-            concatBytes.flush();
             concatBytes.write(datareaded);
-            concatBytes.flush();
             if((frameIndex + 1) == Constants.FRAME_RATE)
             {
                 concatBytes.write("]".getBytes());
-                concatBytes.flush();
             }
+            System.out.println(chunkId + ": " + frameIndex);
             frameWriter.write(concatBytes.toByteArray());
         }
         catch (Exception e) {

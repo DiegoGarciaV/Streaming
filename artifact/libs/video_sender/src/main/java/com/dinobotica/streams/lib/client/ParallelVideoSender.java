@@ -15,7 +15,6 @@ import com.github.sarxos.webcam.WebcamResolution;
 public class ParallelVideoSender{
     
     private String host;
-    private int port;
     private MessageDTO messageDTO = new MessageDTO();
 
     public static final String FRAMES_COUNT = "framesCount";
@@ -23,10 +22,9 @@ public class ParallelVideoSender{
 
     private final Logger logger = Logger.getLogger(ParallelVideoSender.class.getName());
 
-    public ParallelVideoSender(String host, int port)
+    public ParallelVideoSender(String host)
     {
         this.host = host;
-        this.port = port;
         messageDTO.setMessage("");
         messageDTO.setParams(new HashMap<>());
     }
@@ -75,8 +73,7 @@ public class ParallelVideoSender{
     public static void main(String[] args) {
         
         String servidor = args[0];
-        int port = Integer.parseInt(args[1]);
-        ParallelVideoSender parallelVideoSender = new ParallelVideoSender(servidor, port);
+        ParallelVideoSender parallelVideoSender = new ParallelVideoSender(servidor);
         parallelVideoSender.takePicture();
     }
 

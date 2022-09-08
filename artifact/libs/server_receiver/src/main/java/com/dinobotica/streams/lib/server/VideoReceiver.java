@@ -1,5 +1,6 @@
 package com.dinobotica.streams.lib.server;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -15,13 +16,12 @@ public class VideoReceiver implements Runnable{
 
     private static final int INACTIVITY_TIMEOUT = 300000;
 
+    private static final Logger logger = Logger.getLogger(VideoReceiver.class.getName());
+
     public VideoReceiver(int port)
     {
         this.port = port;
     }
-    
-    private final Logger logger = Logger.getLogger(VideoReceiver.class.getName());
-    
     
     @Override
     public void run() {
@@ -48,6 +48,22 @@ public class VideoReceiver implements Runnable{
 
     public static void main(String[] args) {
         
+        File framesDir = new File(Constants.FRAMES_PATH);
+        
+        if (!framesDir.exists() && !framesDir.mkdirs()) 
+        {
+            logger.info("No fue posible crear carpeta");
+        }
+        else if(framesDir.exists())
+        {
+            File[] frames = framesDir.listFiles();
+            for(int j = 0; j < frames.length; j++)
+            {
+                if(frames[j].delete())
+                    logger.log(Level.WARNING,"No fue posible borrar el frameChunk {0}",j);
+            }
+        }
+                
         for(int j = 0; j < Constants.FRAME_RATE; j++)
             new Thread(new VideoReceiver(Constants.START_PORT + j)).start();
 
