@@ -52,7 +52,7 @@ public class ChunkSender implements Runnable{
                     if(clientService!=null)
                     {
                         clientService.sendDataNonResponse(frameDto.toString().getBytes());
-                        System.out.println(frameDto.toString().length());
+                        System.out.println(chunkId + " " + frameIndex + " " + frameDto.toString().length());
                     } 
                     baos.close(); 
                     

@@ -27,7 +27,7 @@ public class ClientService {
     public ClientService(String server, int port) throws IOException
     {
         clientSocket = new Socket(server, port);
-        dataOut = new BufferedOutputStream(clientSocket.getOutputStream());
+        dataOut = new BufferedOutputStream(clientSocket.getOutputStream(),Constants.BUFFER_SIZE);
         dataIn = new BufferedInputStream(clientSocket.getInputStream(),Constants.BUFFER_SIZE);
         connected = true;
 

@@ -60,7 +60,6 @@ public class FrameReader implements Runnable{
         {
             byte[] lectura = new byte[Constants.BUFFER_SIZE];
             int readSize = dataIn.read(lectura);
-            System.out.println(readSize);
             byte[] datareaded = Arrays.copyOf(lectura, readSize);
             String stringDataReaded = new String(datareaded);
 
