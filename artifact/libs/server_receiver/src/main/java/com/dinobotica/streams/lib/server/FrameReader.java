@@ -124,7 +124,7 @@ public class FrameReader implements Runnable{
             {
                 concatBytes.write("]".getBytes());
             }
-            System.out.println(chunkId + ": " + frameIndex);
+            System.out.println(chunkId + ": " + frameIndex + ", " + stringDataReaded.length());
             frameWriter.write(concatBytes.toByteArray());
         }
         catch (Exception e) {
