@@ -80,6 +80,8 @@ public class FrameReader implements Runnable{
 
             if(!endConnection && fullReadSize > 0)
                 writeReadedChunk(fullDataReaded,stringDataReaded);
+            else if(endConnection && (Integer)messageDTO.getParams().get(chunkId) < Constants.FRAME_RATE)
+                writeOnFile("]".getBytes(), true);
                       
         } 
         catch (IOException e) {
@@ -123,22 +125,29 @@ public class FrameReader implements Runnable{
         if(stringDataReaded.contains("chunkId"))
             chunkId = stringDataReaded.split(":")[1].replace(",\"time\"", "").replace(" ", "");
 
-        String formatedChunkId = String.format("%04d", Integer.parseInt(chunkId));
         int currentInsertedFrames = (Integer)messageDTO.getParams().get(chunkId);
         boolean initalFrame = (currentInsertedFrames == 0);
         boolean finalFrame = (currentInsertedFrames == (Constants.FRAME_RATE - 1));
-        String finalPath = Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json";
         byte[] initialChar = (initalFrame ? "[".getBytes() : ",".getBytes());
 
-        try(BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(finalPath,!initalFrame),Constants.BUFFER_SIZE))
+        concatBytes.write(initialChar);
+        concatBytes.write(datareaded);
+        if(finalFrame)
+            concatBytes.write("]".getBytes());
+        writeOnFile(concatBytes.toByteArray(),!initalFrame);
+        messageDTO.getParams().replace(chunkId, (currentInsertedFrames + 1));
+        System.out.println(messageDTO.getParams().toString());
+
+        
+    }
+
+    private void writeOnFile(byte[] bytesToWrite, boolean append)
+    {
+        String formatedChunkId = String.format("%04d", Integer.parseInt(chunkId));
+        String finalPath = Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json";
+        try(BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(finalPath,append),Constants.BUFFER_SIZE))
         {
-            concatBytes.write(initialChar);
-            concatBytes.write(datareaded);
-            if(finalFrame)
-                concatBytes.write("]".getBytes());
-            
-            frameWriter.write(concatBytes.toByteArray());
-            messageDTO.getParams().replace(chunkId, (currentInsertedFrames + 1));
+            frameWriter.write(bytesToWrite);
         }
         catch (Exception e) {
             logger.warning(e.toString());
