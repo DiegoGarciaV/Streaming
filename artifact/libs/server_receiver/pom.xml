@@ -77,7 +77,7 @@
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>libs/</classpathPrefix>
 							<mainClass>
-								com.dinobotica.streams.lib.server.InputService
+								com.dinobotica.streams.lib.server.VideoReceiver
 							</mainClass>
 						</manifest>
 					</archive>

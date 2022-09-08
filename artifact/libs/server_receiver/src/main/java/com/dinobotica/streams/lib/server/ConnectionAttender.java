@@ -1,25 +1,18 @@
 package com.dinobotica.streams.lib.server;
 
-import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.SocketException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 
 import com.dinobotica.streams.dto.Constants;
 import com.dinobotica.streams.dto.MessageDTO;
@@ -103,7 +96,6 @@ public class ConnectionAttender implements Runnable{
                 if(stringDataReaded.contains("},{"))
                 {   
                     frames = stringDataReaded.split("\\},\\{");
-                    System.out.println("Existen " + frames.length + " },{");
                     for(int i = 0; i < frames.length; i++)
                     {
                         String frame = frames[i];
@@ -179,7 +171,6 @@ public class ConnectionAttender implements Runnable{
             {
                 int longitud = readedData.length();
                 dataOut.write(("R.- " + longitud).getBytes());
-                System.out.println("Longitud del paquete " + longitud);
                 dataOut.flush();
             }
         }
@@ -189,7 +180,6 @@ public class ConnectionAttender implements Runnable{
     {
         String chunkId;
         boolean completeFrame = (stringDataReaded.contains("{") && stringDataReaded.contains("}"));
-        System.out.println(chunksCounter.toString());
         if(stringDataReaded.contains("chunkId"))
         {
             chunkId = stringDataReaded.split(":")[1].replace(",\"time\"", "").replace(" ", "");
@@ -217,34 +207,26 @@ public class ConnectionAttender implements Runnable{
             }
         }
 
+        ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
         String formatedChunkId = String.format("%04d", Integer.parseInt(chunkId));
-        System.out.println(chunkId + " " + completeFrame + " " + stringDataReaded.length());
-        if(chunksCounter.get(chunkId) == 1.0f)
+        boolean initalFrame = (chunksCounter.get(chunkId) == 1.0f);
+        String finalPath = Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json";
+        byte[] initialChar = (initalFrame ? "[".getBytes() : ",".getBytes());
+        try(BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(finalPath,!initalFrame),Constants.BUFFER_SIZE))
         {
-            BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json"),Constants.BUFFER_SIZE);
-            ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
-            concatBytes.write("[".getBytes());
+            concatBytes.write(initialChar);
             concatBytes.flush();
             concatBytes.write(datareaded);
             concatBytes.flush();
-            frameWriter.write(concatBytes.toByteArray());
-            frameWriter.close();
-        }
-        else if(chunksCounter.get(chunkId) <= Constants.FRAME_RATE)
-        {
-            BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json",true),Constants.BUFFER_SIZE);
-            ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
-            concatBytes.write(",".getBytes());
-            concatBytes.flush();
-            concatBytes.write(datareaded);
-            concatBytes.flush();
-            if(!(chunksCounter.get(chunkId) < Constants.FRAME_RATE))
+            if((chunksCounter.get(chunkId)) == Constants.FRAME_RATE)
             {
                 concatBytes.write("]".getBytes());
                 concatBytes.flush();
             }
             frameWriter.write(concatBytes.toByteArray());
-            frameWriter.close();
+        }
+        catch (Exception e) {
+            logger.warning(e.toString());
         }
     }
 
