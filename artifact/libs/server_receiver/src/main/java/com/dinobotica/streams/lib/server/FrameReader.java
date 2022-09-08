@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.dinobotica.streams.dto.Constants;
@@ -25,12 +26,13 @@ public class FrameReader implements Runnable{
 
     int contador = 0;
 
-    private final Logger logger = Logger.getLogger(ConnectionAttender.class.getName());
+    private final Logger logger = Logger.getLogger(FrameReader.class.getName());
 
     public FrameReader(Socket clienSocket) throws IOException
     {
         this.clientSocket = clienSocket;
         this.frameIndex = this.clientSocket.getPort() - Constants.START_PORT;
+        logger.log(Level.INFO,"{0}",frameIndex);
         dataOut = new BufferedOutputStream(clienSocket.getOutputStream());
         dataIn = new BufferedInputStream(clienSocket.getInputStream(),Constants.BUFFER_SIZE);
         
@@ -44,7 +46,6 @@ public class FrameReader implements Runnable{
     @Override
     public void run() {
         logger.info("Comenzando comunicación en socket " + clientSocket.getInetAddress());
-        
         while(!endConnection)
             socketCommunication();
 
@@ -115,6 +116,9 @@ public class FrameReader implements Runnable{
         if(stringDataReaded.contains("chunkId"))
             chunkId = stringDataReaded.split(":")[1].replace(",\"time\"", "").replace(" ", "");
 
+        if(stringDataReaded.contains("frameIndex"))
+            frameIndex = Integer.parseInt(stringDataReaded.split(":")[3].replace(",\"image\"", "").replace(" ", ""));
+
         String formatedChunkId = String.format("%04d", Integer.parseInt(chunkId));
         boolean initalFrame = (frameIndex == 0);
         String finalPath = Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json";
@@ -136,7 +140,7 @@ public class FrameReader implements Runnable{
             logger.warning(e.toString());
         }
     }
-    
+
     public boolean isEndConnection() {
         return endConnection;
     }

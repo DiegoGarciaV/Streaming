@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.dinobotica.streams.dto.Constants;
@@ -27,6 +28,7 @@ public class VideoReceiver implements Runnable{
         
         try(ServerSocket socket = new ServerSocket(port))
         {
+            logger.log(Level.INFO,"Iniciando servicio en puerto {0}",port);
             socket.setSoTimeout(INACTIVITY_TIMEOUT);
             Socket clientSocket = socket.accept();
             FrameReader frameReader;
@@ -47,8 +49,8 @@ public class VideoReceiver implements Runnable{
     public static void main(String[] args) {
         
         for(int j = 0; j < Constants.FRAME_RATE; j++)
-            new Thread(new VideoReceiver(Constants.START_PORT + j));
-            
+            new Thread(new VideoReceiver(Constants.START_PORT + j)).start();
+
     }
     
 }
