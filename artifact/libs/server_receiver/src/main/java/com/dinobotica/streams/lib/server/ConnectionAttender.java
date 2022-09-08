@@ -86,7 +86,6 @@ public class ConnectionAttender implements Runnable{
             byte[] datareaded = Arrays.copyOf(lectura, readSize);
             String stringDataReaded = new String(datareaded);
             getString(stringDataReaded);
-            String chunkId;
             boolean chunkToRead = false;
             File framesDir = new File(Constants.FRAMES_PATH);
             if (!framesDir.exists() && !framesDir.mkdirs()) {
@@ -180,6 +179,7 @@ public class ConnectionAttender implements Runnable{
             {
                 int longitud = readedData.length();
                 dataOut.write(("R.- " + longitud).getBytes());
+                System.out.println("Longitud del paquete " + longitud);
                 dataOut.flush();
             }
         }
@@ -189,13 +189,14 @@ public class ConnectionAttender implements Runnable{
     {
         String chunkId;
         boolean completeFrame = (stringDataReaded.contains("{") && stringDataReaded.contains("}"));
+        System.out.println(chunksCounter.toString());
         if(stringDataReaded.contains("chunkId"))
         {
             chunkId = stringDataReaded.split(":")[1].replace(",\"time\"", "").replace(" ", "");
             if(chunksCounter.containsKey(chunkId))
                 chunksCounter.replace(chunkId, chunksCounter.get(chunkId) + (completeFrame ? 1.0f : 0.5f));
             else
-                chunksCounter.put(chunkId, 1.0f);
+                chunksCounter.put(chunkId, (completeFrame ? 1.0f : 0.5f));
 
         }
         else
@@ -204,16 +205,20 @@ public class ConnectionAttender implements Runnable{
             chunkId = "" + chunkIdInt;
             for(Map.Entry<String,Float> tupla : chunksCounter.entrySet())
             {
-                if(tupla.getValue() < 1.0f && Integer.parseInt(tupla.getKey()) < chunkIdInt)
+                if(((tupla.getValue() % 1) == 0.5f) && Integer.parseInt(tupla.getKey()) < chunkIdInt)
                 {
                     chunkId = tupla.getKey();
                     chunkIdInt = Integer.parseInt(chunkId);
                 }
             }
+            if(stringDataReaded.contains("}"))
+            {
+                chunksCounter.replace(chunkId,chunksCounter.get(chunkId) + 0.5f);
+            }
         }
 
         String formatedChunkId = String.format("%04d", Integer.parseInt(chunkId));
-
+        System.out.println(chunkId + " " + completeFrame + " " + stringDataReaded.length());
         if(chunksCounter.get(chunkId) == 1.0f)
         {
             BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json"),Constants.BUFFER_SIZE);
