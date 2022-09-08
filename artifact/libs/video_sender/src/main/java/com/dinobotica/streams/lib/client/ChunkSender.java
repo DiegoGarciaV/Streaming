@@ -45,13 +45,13 @@ public class ChunkSender implements Runnable{
                 try
                 {
                     ImageIO.write(frame, "JPG", baos );
-                    int num = (Integer)messageDTO.getParams().get(ParallelVideoSender.FRAMES_COUNT)+1;
-                    messageDTO.getParams().replace(ParallelVideoSender.FRAMES_COUNT, num);
                     String b64Frame = Base64.getEncoder().encodeToString(baos.toByteArray());
-                    FrameDTO frameDto = new FrameDTO(chunkId+1,frameTime,b64Frame,frameIndex);
+                    FrameDTO frameDto = new FrameDTO(chunkId+1L,frameTime,b64Frame,frameIndex);
                     if(clientService!=null)
                     {
-                        clientService.sendDataNonResponse(frameDto.toString().getBytes());
+                        clientService.sendData(frameDto.toString().getBytes());
+                        int num = (Integer)messageDTO.getParams().get(ParallelVideoSender.FRAMES_COUNT)+1;
+                        messageDTO.getParams().replace(ParallelVideoSender.FRAMES_COUNT, num);
                     } 
                     baos.close(); 
                     
