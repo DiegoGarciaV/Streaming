@@ -179,6 +179,7 @@ public class ConnectionAttender implements Runnable{
             {
                 int longitud = readedData.length();
                 dataOut.write(("R.- " + longitud).getBytes());
+                System.out.println("Longitud del paquete " + longitud);
                 dataOut.flush();
             }
         }
