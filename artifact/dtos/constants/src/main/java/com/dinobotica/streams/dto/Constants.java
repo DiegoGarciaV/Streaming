@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class Constants {
 
-    public static final int BUFFER_SIZE = 1024<<15;
+    public static final int BUFFER_SIZE = 1024<<10;
     public static final int FRAME_RATE = 45;
     public static final int CHUNK_RATE = 15;
     public static final int START_PORT = 6600;
