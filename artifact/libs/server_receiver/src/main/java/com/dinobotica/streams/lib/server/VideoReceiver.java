@@ -21,13 +21,10 @@ public class VideoReceiver implements Runnable{
 
     private static final Logger logger = Logger.getLogger(VideoReceiver.class.getName());
 
-    public VideoReceiver(int port)
+    public VideoReceiver(int port, MessageDTO messageDTO)
     {
         this.port = port;
-        this.messageDTO = new MessageDTO();
-        messageDTO.setParams(new HashMap<>());
-        for(int i = 0;i<Constants.CHUNK_RATE; i++)
-            messageDTO.getParams().put("" + i+1, 0);
+        this.messageDTO = messageDTO;
     }
     
     @Override
@@ -71,8 +68,12 @@ public class VideoReceiver implements Runnable{
             }
         }
                 
+        MessageDTO messageDTO = new MessageDTO();
+        messageDTO.setParams(new HashMap<>());
+        for(int i = 0;i<Constants.CHUNK_RATE; i++)
+            messageDTO.getParams().put("" + (i+1), 0);
         for(int j = 0; j < Constants.FRAME_RATE; j++)
-            new Thread(new VideoReceiver(Constants.START_PORT + j)).start();
+            new Thread(new VideoReceiver(Constants.START_PORT + j,messageDTO)).start();
 
     }
     

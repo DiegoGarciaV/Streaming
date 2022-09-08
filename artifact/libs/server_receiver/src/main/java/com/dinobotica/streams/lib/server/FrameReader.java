@@ -90,6 +90,7 @@ public class FrameReader implements Runnable{
         {
             logger.severe("Excepcion no controlada");
             e.printStackTrace();
+
             endConnection = true;
         }
         
@@ -135,10 +136,9 @@ public class FrameReader implements Runnable{
             concatBytes.write(datareaded);
             if(finalFrame)
                 concatBytes.write("]".getBytes());
-                
+            
             frameWriter.write(concatBytes.toByteArray());
-            messageDTO.getParams().replace(chunkId, currentInsertedFrames, currentInsertedFrames + 1);
-            System.out.println(messageDTO.getParams().toString());
+            messageDTO.getParams().replace(chunkId, (currentInsertedFrames + 1));
         }
         catch (Exception e) {
             logger.warning(e.toString());
