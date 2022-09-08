@@ -138,6 +138,7 @@ public class FrameReader implements Runnable{
                 
             frameWriter.write(concatBytes.toByteArray());
             messageDTO.getParams().replace(chunkId, currentInsertedFrames, currentInsertedFrames + 1);
+            System.out.println(messageDTO.getParams().toString());
         }
         catch (Exception e) {
             logger.warning(e.toString());

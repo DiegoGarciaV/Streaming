@@ -27,7 +27,7 @@ public class VideoReceiver implements Runnable{
         this.messageDTO = new MessageDTO();
         messageDTO.setParams(new HashMap<>());
         for(int i = 0;i<Constants.CHUNK_RATE; i++)
-            messageDTO.getParams().put("" + i, 0);
+            messageDTO.getParams().put("" + i+1, 0);
     }
     
     @Override
