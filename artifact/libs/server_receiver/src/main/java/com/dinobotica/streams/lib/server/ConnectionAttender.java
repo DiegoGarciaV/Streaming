@@ -213,7 +213,7 @@ public class ConnectionAttender implements Runnable{
         }
 
         String formatedChunkId = String.format("%04d", Integer.parseInt(chunkId));
-
+        System.out.println(chunkId);
         if(chunksCounter.get(chunkId) == 1.0f)
         {
             BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json"),Constants.BUFFER_SIZE);
