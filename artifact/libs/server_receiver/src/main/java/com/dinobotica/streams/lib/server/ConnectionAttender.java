@@ -189,6 +189,7 @@ public class ConnectionAttender implements Runnable{
     {
         String chunkId;
         boolean completeFrame = (stringDataReaded.contains("{") && stringDataReaded.contains("}"));
+        System.out.println(chunksCounter.toString());
         if(stringDataReaded.contains("chunkId"))
         {
             chunkId = stringDataReaded.split(":")[1].replace(",\"time\"", "").replace(" ", "");
@@ -204,11 +205,15 @@ public class ConnectionAttender implements Runnable{
             chunkId = "" + chunkIdInt;
             for(Map.Entry<String,Float> tupla : chunksCounter.entrySet())
             {
-                if(tupla.getValue() < 1.0f && Integer.parseInt(tupla.getKey()) < chunkIdInt)
+                if(((tupla.getValue() % 1) < 1.0f) && Integer.parseInt(tupla.getKey()) < chunkIdInt)
                 {
                     chunkId = tupla.getKey();
                     chunkIdInt = Integer.parseInt(chunkId);
                 }
+            }
+            if(stringDataReaded.contains("}"))
+            {
+                chunksCounter.replace(chunkId,chunksCounter.get(chunkId) + 0.5f);
             }
         }
 
