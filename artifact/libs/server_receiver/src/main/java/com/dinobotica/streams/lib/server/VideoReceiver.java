@@ -5,14 +5,17 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.dinobotica.streams.dto.Constants;
+import com.dinobotica.streams.dto.MessageDTO;
 
 public class VideoReceiver implements Runnable{
 
     private int port;
+    private MessageDTO messageDTO;
 
     private static final int INACTIVITY_TIMEOUT = 300000;
 
@@ -21,6 +24,10 @@ public class VideoReceiver implements Runnable{
     public VideoReceiver(int port)
     {
         this.port = port;
+        this.messageDTO = new MessageDTO();
+        messageDTO.setParams(new HashMap<>());
+        for(int i = 0;i<Constants.CHUNK_RATE; i++)
+            messageDTO.getParams().put("" + i, 0);
     }
     
     @Override
@@ -32,7 +39,7 @@ public class VideoReceiver implements Runnable{
             socket.setSoTimeout(INACTIVITY_TIMEOUT);
             Socket clientSocket = socket.accept();
             FrameReader frameReader;
-            frameReader = new FrameReader(clientSocket);
+            frameReader = new FrameReader(clientSocket,messageDTO);
             frameReader.run();
         }
         catch(SocketTimeoutException soTmE)
@@ -59,7 +66,7 @@ public class VideoReceiver implements Runnable{
             File[] frames = framesDir.listFiles();
             for(int j = 0; j < frames.length; j++)
             {
-                if(frames[j].delete())
+                if(!frames[j].delete())
                     logger.log(Level.WARNING,"No fue posible borrar el frameChunk {0}",j);
             }
         }

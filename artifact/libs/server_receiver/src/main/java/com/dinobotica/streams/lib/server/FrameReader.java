@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.logging.Logger;
 
 import com.dinobotica.streams.dto.Constants;
+import com.dinobotica.streams.dto.MessageDTO;
 
 public class FrameReader implements Runnable{
 
@@ -18,7 +19,7 @@ public class FrameReader implements Runnable{
     private Socket clientSocket;
     private boolean endConnection = false;
     private String chunkId = "1";
-    private int frameIndex;
+    private MessageDTO messageDTO;
 
     private static final String END_MESSAJE = "_END_OF_MSG_";
 
@@ -26,10 +27,10 @@ public class FrameReader implements Runnable{
 
     private final Logger logger = Logger.getLogger(FrameReader.class.getName());
 
-    public FrameReader(Socket clienSocket) throws IOException
+    public FrameReader(Socket clienSocket, MessageDTO messageDTO) throws IOException
     {
         this.clientSocket = clienSocket;
-        this.frameIndex = this.clientSocket.getPort() - Constants.START_PORT;
+        this.messageDTO = messageDTO;
         dataOut = new BufferedOutputStream(clienSocket.getOutputStream());
         dataIn = new BufferedInputStream(clienSocket.getInputStream(),Constants.BUFFER_SIZE);
         
@@ -121,22 +122,22 @@ public class FrameReader implements Runnable{
         if(stringDataReaded.contains("chunkId"))
             chunkId = stringDataReaded.split(":")[1].replace(",\"time\"", "").replace(" ", "");
 
-        if(stringDataReaded.contains("frameIndex"))
-            frameIndex = Integer.parseInt(stringDataReaded.split(":")[3].replace(",\"image\"", "").replace(" ", ""));
-
         String formatedChunkId = String.format("%04d", Integer.parseInt(chunkId));
-        boolean initalFrame = (frameIndex == 0);
+        int currentInsertedFrames = (Integer)messageDTO.getParams().get(chunkId);
+        boolean initalFrame = (currentInsertedFrames == 0);
+        boolean finalFrame = (currentInsertedFrames == (Constants.FRAME_RATE - 1));
         String finalPath = Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json";
         byte[] initialChar = (initalFrame ? "[".getBytes() : ",".getBytes());
+
         try(BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(finalPath,!initalFrame),Constants.BUFFER_SIZE))
         {
             concatBytes.write(initialChar);
             concatBytes.write(datareaded);
-            if((frameIndex + 1) == Constants.FRAME_RATE)
-            {
+            if(finalFrame)
                 concatBytes.write("]".getBytes());
-            }
+                
             frameWriter.write(concatBytes.toByteArray());
+            messageDTO.getParams().replace(chunkId, currentInsertedFrames, currentInsertedFrames + 1);
         }
         catch (Exception e) {
             logger.warning(e.toString());
