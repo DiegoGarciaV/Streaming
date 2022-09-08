@@ -6,7 +6,7 @@ public class Constants {
 
     private Constants(){}
 
-    public static final int BUFFER_SIZE = 1024<<12;
+    public static final int BUFFER_SIZE = 1024<<9;
     public static final int FRAME_RATE = 30;
     public static final int CHUNK_RATE = 15;
     public static final int START_PORT = 6600;

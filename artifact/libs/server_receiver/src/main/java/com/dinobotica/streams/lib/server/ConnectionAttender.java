@@ -2,16 +2,11 @@ package com.dinobotica.streams.lib.server;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import com.dinobotica.streams.dto.Constants;
@@ -31,7 +26,6 @@ public class ConnectionAttender implements Runnable{
     private static final String GET_DATA = "_GET_";
     private static final String SEPARATOR = "_M_";
 
-    private Map<String,Float> chunksCounter = new HashMap<String,Float>();
 
     int contador = 0;
 
@@ -79,44 +73,6 @@ public class ConnectionAttender implements Runnable{
             byte[] datareaded = Arrays.copyOf(lectura, readSize);
             String stringDataReaded = new String(datareaded);
             getString(stringDataReaded);
-            boolean chunkToRead = false;
-            File framesDir = new File(Constants.FRAMES_PATH);
-            if (!framesDir.exists() && !framesDir.mkdirs()) {
-                logger.info("Error al crear directorio de frames");
-            }
-            if(!endConnection)
-                chunkToRead = true;
-            
-            if(readSize > 0 && chunkToRead)
-            {
-                stringDataReaded = stringDataReaded.replaceAll("}\\{", "\\},\\{");
-                datareaded = stringDataReaded.getBytes();
-                //Verificamos que haya solo un cuadro, en caso contrario, se separan
-                String[] frames;
-                if(stringDataReaded.contains("},{"))
-                {   
-                    frames = stringDataReaded.split("\\},\\{");
-                    for(int i = 0; i < frames.length; i++)
-                    {
-                        String frame = frames[i];
-                        if(i==0)
-                            frame = frame + "}";
-                        else if(i < (frames.length-1))
-                            frame = "{" + frame + "}";
-                        else
-                            frame = "{" + frame;
-                        writeReadedChunk(frame.getBytes(),frame);
-                    }
-                }
-                else
-                {
-                    writeReadedChunk(datareaded,stringDataReaded);
-                }
-
-                
-                
-            }
-            
             
         } 
         catch(EOFException e)
@@ -175,61 +131,6 @@ public class ConnectionAttender implements Runnable{
             }
         }
     }
-
-    private void writeReadedChunk(byte[] datareaded,String stringDataReaded) throws IOException
-    {
-        String chunkId;
-        boolean completeFrame = (stringDataReaded.contains("{") && stringDataReaded.contains("}"));
-        if(stringDataReaded.contains("chunkId"))
-        {
-            chunkId = stringDataReaded.split(":")[1].replace(",\"time\"", "").replace(" ", "");
-            if(chunksCounter.containsKey(chunkId))
-                chunksCounter.replace(chunkId, chunksCounter.get(chunkId) + (completeFrame ? 1.0f : 0.5f));
-            else
-                chunksCounter.put(chunkId, (completeFrame ? 1.0f : 0.5f));
-
-        }
-        else
-        {
-            int chunkIdInt = Constants.CHUNK_RATE;
-            chunkId = "" + chunkIdInt;
-            for(Map.Entry<String,Float> tupla : chunksCounter.entrySet())
-            {
-                if(((tupla.getValue() % 1) == 0.5f) && Integer.parseInt(tupla.getKey()) < chunkIdInt)
-                {
-                    chunkId = tupla.getKey();
-                    chunkIdInt = Integer.parseInt(chunkId);
-                }
-            }
-            if(stringDataReaded.contains("}"))
-            {
-                chunksCounter.replace(chunkId,chunksCounter.get(chunkId) + 0.5f);
-            }
-        }
-
-        ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
-        String formatedChunkId = String.format("%04d", Integer.parseInt(chunkId));
-        boolean initalFrame = (chunksCounter.get(chunkId) == 1.0f);
-        String finalPath = Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json";
-        byte[] initialChar = (initalFrame ? "[".getBytes() : ",".getBytes());
-        try(BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(finalPath,!initalFrame),Constants.BUFFER_SIZE))
-        {
-            concatBytes.write(initialChar);
-            concatBytes.flush();
-            concatBytes.write(datareaded);
-            concatBytes.flush();
-            if((chunksCounter.get(chunkId)) == Constants.FRAME_RATE)
-            {
-                concatBytes.write("]".getBytes());
-                concatBytes.flush();
-            }
-            frameWriter.write(concatBytes.toByteArray());
-        }
-        catch (Exception e) {
-            logger.warning(e.toString());
-        }
-    }
-
 
     
 }
