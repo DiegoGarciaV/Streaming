@@ -58,15 +58,24 @@ public class FrameReader implements Runnable{
     {
         try 
         {
-            byte[] lectura = new byte[Constants.BUFFER_SIZE];
-            int readSize = dataIn.read(lectura);
-            byte[] datareaded = Arrays.copyOf(lectura, readSize);
-            String stringDataReaded = new String(datareaded);
+            ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
+            String stringDataReaded;
+            int readSize;
+            do
+            {
+                byte[] lectura = new byte[Constants.BUFFER_SIZE];
+                readSize = dataIn.read(lectura);
+                byte[] datareaded = Arrays.copyOf(lectura, readSize);
+                concatBytes.write(datareaded);
+                stringDataReaded = new String(concatBytes.toByteArray());
+            }
+            while(stringDataReaded.contains("{") && stringDataReaded.contains("}"));
 
+            byte[] fullDataReaded = concatBytes.toByteArray();
             getString(stringDataReaded);
 
             if(!endConnection && readSize > 0)
-                writeReadedChunk(datareaded,stringDataReaded);
+                writeReadedChunk(fullDataReaded,stringDataReaded);
                       
         } 
         catch (IOException e) {
