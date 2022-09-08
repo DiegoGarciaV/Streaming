@@ -86,7 +86,6 @@ public class ConnectionAttender implements Runnable{
             byte[] datareaded = Arrays.copyOf(lectura, readSize);
             String stringDataReaded = new String(datareaded);
             getString(stringDataReaded);
-            String chunkId;
             boolean chunkToRead = false;
             File framesDir = new File(Constants.FRAMES_PATH);
             if (!framesDir.exists() && !framesDir.mkdirs()) {
@@ -195,7 +194,7 @@ public class ConnectionAttender implements Runnable{
             if(chunksCounter.containsKey(chunkId))
                 chunksCounter.replace(chunkId, chunksCounter.get(chunkId) + (completeFrame ? 1.0f : 0.5f));
             else
-                chunksCounter.put(chunkId, 1.0f);
+                chunksCounter.put(chunkId, (completeFrame ? 1.0f : 0.5f));
 
         }
         else
