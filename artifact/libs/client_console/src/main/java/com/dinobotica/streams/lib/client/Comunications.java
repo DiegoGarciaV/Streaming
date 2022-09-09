@@ -7,9 +7,9 @@ import java.util.logging.Logger;
 public class Comunications {
 
     private ClientService clientService;
-    private final String END_MESSAJE = "_END_OF_MSG_";
+    private static final String END_MESSAJE = "_END_OF_MSG_";
 
-    private final Logger logger = Logger.getLogger(Comunications.class.getName());
+    private static final Logger logger = Logger.getLogger(Comunications.class.getName());
 
 
     public ClientService getClientService() {
@@ -27,9 +27,9 @@ public class Comunications {
             port = (port == 0 ? 6666 : port);
             clientService = new ClientService(server, port);
         }
-        catch(IOException IoE)
+        catch(IOException ioE)
         {
-            IoE.printStackTrace();
+            ioE.printStackTrace();
         }
         
     }
@@ -45,18 +45,18 @@ public class Comunications {
             String cmd = System.console().readLine("Escriba un mensaje: ");
             if(cmd.equals("END"))
             {
-                hostResponse = comunications.getClientService().sendData(comunications.END_MESSAJE.getBytes());
+                hostResponse = comunications.getClientService().sendData(Comunications.END_MESSAJE.getBytes());
                 connStatus = false;
             }  
             else
             {
                 hostResponse = comunications.getClientService().sendData(cmd.getBytes());
-                System.out.println(hostResponse);
+                logger.info(hostResponse);
             }
         }
         
         if(hostResponse.equals("Fin de la conexion\n"))
-            System.out.println("Se ha finalizado correctamente la comunicación");
+            logger.info("Se ha finalizado correctamente la comunicación");
         comunications.getClientService().closeConnection();
     }
 

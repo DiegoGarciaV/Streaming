@@ -43,7 +43,7 @@ public class ClientService {
             dataOut.write(message);
             dataOut.flush();
             byte[] lectura = new byte[Constants.BUFFER_SIZE];
-            int readSize = dataIn.read(lectura);
+            int readSize = dataIn.read(lectura);     
             if(readSize>0)
             {
                 byte[] datareaded = Arrays.copyOf(lectura, readSize);

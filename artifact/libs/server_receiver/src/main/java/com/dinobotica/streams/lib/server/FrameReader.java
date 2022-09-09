@@ -3,16 +3,17 @@ package com.dinobotica.streams.lib.server;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
-import java.util.logging.Level;
+import java.util.LinkedList;
 import java.util.logging.Logger;
 
 import com.dinobotica.streams.dto.Constants;
+import com.dinobotica.streams.dto.MessageDTO;
 
+@SuppressWarnings("unchecked")
 public class FrameReader implements Runnable{
 
     protected BufferedInputStream dataIn;
@@ -20,7 +21,7 @@ public class FrameReader implements Runnable{
     private Socket clientSocket;
     private boolean endConnection = false;
     private String chunkId = "1";
-    private int frameIndex;
+    private MessageDTO messageDTO;
 
     private static final String END_MESSAJE = "_END_OF_MSG_";
 
@@ -28,11 +29,10 @@ public class FrameReader implements Runnable{
 
     private final Logger logger = Logger.getLogger(FrameReader.class.getName());
 
-    public FrameReader(Socket clienSocket) throws IOException
+    public FrameReader(Socket clienSocket, MessageDTO messageDTO) throws IOException
     {
         this.clientSocket = clienSocket;
-        this.frameIndex = this.clientSocket.getPort() - Constants.START_PORT;
-        logger.log(Level.INFO,"{0}",frameIndex);
+        this.messageDTO = messageDTO;
         dataOut = new BufferedOutputStream(clienSocket.getOutputStream());
         dataIn = new BufferedInputStream(clienSocket.getInputStream(),Constants.BUFFER_SIZE);
         
@@ -61,19 +61,29 @@ public class FrameReader implements Runnable{
     {
         try 
         {
-            byte[] lectura = new byte[Constants.BUFFER_SIZE];
-            int readSize = dataIn.read(lectura);
-            byte[] datareaded = Arrays.copyOf(lectura, readSize);
-            String stringDataReaded = new String(datareaded);
-
+            ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
+            String stringDataReaded = "";
+            int fullReadSize = 0;
+            do
+            {
+                byte[] lectura = new byte[Constants.BUFFER_SIZE];
+                int readSize = dataIn.read(lectura);
+                if(readSize < 0)
+                    break;
+                fullReadSize = fullReadSize + readSize;
+                byte[] datareaded = Arrays.copyOf(lectura, readSize);
+                concatBytes.write(datareaded);
+                stringDataReaded = new String(concatBytes.toByteArray());
+            }
+            while(!(stringDataReaded.contains("{") && stringDataReaded.contains("}")) && !stringDataReaded.contains(END_MESSAJE));
+            byte[] fullDataReaded = concatBytes.toByteArray();
             getString(stringDataReaded);
-
-            File framesDir = new File(Constants.FRAMES_PATH);
-            if (!framesDir.exists() && !framesDir.mkdirs()) 
-                logger.info("Error al crear directorio de frames");
-
-            if(!endConnection && readSize > 0)
-                writeReadedChunk(datareaded,stringDataReaded);
+            if(!endConnection && fullReadSize > 0)
+            {
+                writeReadedChunk(fullDataReaded,stringDataReaded);
+            }
+            else if(endConnection && ((LinkedList<Integer>)messageDTO.getParams().get(chunkId)).size() < Constants.FRAME_RATE)
+                writeOnFile("]".getBytes(), true);
                       
         } 
         catch (IOException e) {
@@ -84,6 +94,7 @@ public class FrameReader implements Runnable{
         {
             logger.severe("Excepcion no controlada");
             e.printStackTrace();
+
             endConnection = true;
         }
         
@@ -116,25 +127,29 @@ public class FrameReader implements Runnable{
         if(stringDataReaded.contains("chunkId"))
             chunkId = stringDataReaded.split(":")[1].replace(",\"time\"", "").replace(" ", "");
 
-        if(stringDataReaded.contains("frameIndex"))
-            frameIndex = Integer.parseInt(stringDataReaded.split(":")[3].replace(",\"image\"", "").replace(" ", ""));
-
-        String formatedChunkId = String.format("%04d", Integer.parseInt(chunkId));
-        boolean initalFrame = (frameIndex == 0);
-        String finalPath = Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json";
+        int currentInsertedFrames = ((LinkedList<Integer>)messageDTO.getParams().get(chunkId)).size();
+        ((LinkedList<Integer>)messageDTO.getParams().get(chunkId)).add(currentInsertedFrames+1);
+        boolean initalFrame = (currentInsertedFrames == 0);
+        boolean finalFrame = (currentInsertedFrames == (Constants.FRAME_RATE - 1));
         byte[] initialChar = (initalFrame ? "[".getBytes() : ",".getBytes());
-        try(BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(finalPath,!initalFrame),Constants.BUFFER_SIZE))
+
+        concatBytes.write(initialChar);
+        concatBytes.write(datareaded);
+        if(finalFrame)
+            concatBytes.write("]".getBytes());
+        writeOnFile(concatBytes.toByteArray(),!initalFrame);
+        
+        
+    }
+
+    private void writeOnFile(byte[] bytesToWrite, boolean append)
+    {
+        String formatedChunkId = String.format("%04d", Integer.parseInt(chunkId));
+        String finalPath = Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json";
+        try(BufferedOutputStream frameWriter = new BufferedOutputStream(new FileOutputStream(finalPath,append),Constants.BUFFER_SIZE))
         {
-            concatBytes.write(initialChar);
-            concatBytes.flush();
-            concatBytes.write(datareaded);
-            concatBytes.flush();
-            if((frameIndex + 1) == Constants.FRAME_RATE)
-            {
-                concatBytes.write("]".getBytes());
-                concatBytes.flush();
-            }
-            frameWriter.write(concatBytes.toByteArray());
+            frameWriter.write(bytesToWrite);
+            frameWriter.flush();
         }
         catch (Exception e) {
             logger.warning(e.toString());

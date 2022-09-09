@@ -6,7 +6,7 @@ import java.util.Map;
 public class MessageDTO implements Serializable{
     
     private String message;
-    private byte buffer[][] = new byte[Constants.FRAME_RATE][];
+    private byte[][] buffer = new byte[Constants.FRAME_RATE][];
     private Map<String,Object> params;
 
     public String getMessage() {
