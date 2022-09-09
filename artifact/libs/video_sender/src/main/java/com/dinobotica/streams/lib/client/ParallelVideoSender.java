@@ -34,7 +34,7 @@ public class ParallelVideoSender{
     public void takePicture()
     {
         Webcam webcam = Webcam.getDefault();    
-        Dimension fullHD = WebcamResolution.WVGA.getSize();
+        Dimension fullHD = WebcamResolution.FHD.getSize();
         webcam.setCustomViewSizes(fullHD);
         webcam.setViewSize(fullHD);
         while(!webcam.open());
