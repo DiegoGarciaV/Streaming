@@ -3,6 +3,7 @@ package com.dinobotica.streams.lib.client;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.awt.Dimension;
 
 import com.dinobotica.streams.dto.Constants;
@@ -56,9 +57,11 @@ public class ParallelVideoSender{
 
             while((Integer)messageDTO.getParams().get(FRAMES_COUNT)<(Constants.FRAME_RATE*Constants.CHUNK_RATE));
 
+            logger.info("Fin de la transmision, cerrando conexiones");
             for(int j = 0;j<Constants.FRAME_RATE;j++)
             {
                 clientService[j].sendData("_END_OF_MSG_".getBytes());
+                logger.log(Level.INFO,"Conexion {0} cerrada",j);
                 clientService[j].closeConnection();
             }
                 

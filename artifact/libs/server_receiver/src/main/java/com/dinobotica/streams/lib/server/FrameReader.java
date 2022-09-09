@@ -67,17 +67,28 @@ public class FrameReader implements Runnable{
                 byte[] lectura = new byte[Constants.BUFFER_SIZE];
                 int readSize = dataIn.read(lectura);
                 if(readSize < 0)
+                {
+                    System.out.println("Read size 0");
                     break;
-                fullReadSize=+ readSize;
+                }
+                fullReadSize = fullReadSize + readSize;
                 byte[] datareaded = Arrays.copyOf(lectura, readSize);
                 concatBytes.write(datareaded);
                 stringDataReaded = new String(concatBytes.toByteArray());
+                // long saltos = stringDataReaded.chars().filter(c -> c == '\n').count();
             }
-            while(!(stringDataReaded.contains("{") && stringDataReaded.contains("}")));
-
+            while(!(stringDataReaded.contains("{") && stringDataReaded.contains("}")) && !stringDataReaded.contains(END_MESSAJE));
+            // if(stringDataReaded.contains("frameIndex"))
+            // {
+            //     String frameIndex = stringDataReaded.split(":")[3].replace(",\"image\"", "").replace(" ", "");
+            //     System.out.println(fullReadSize + ":" + frameIndex);
+            // }
+            // else
+            // {
+            //     System.out.println(fullReadSize + ":" + stringDataReaded);
+            // }
             byte[] fullDataReaded = concatBytes.toByteArray();
             getString(stringDataReaded);
-
             if(!endConnection && fullReadSize > 0)
                 writeReadedChunk(fullDataReaded,stringDataReaded);
             else if(endConnection && (Integer)messageDTO.getParams().get(chunkId) < Constants.FRAME_RATE)
@@ -136,7 +147,6 @@ public class FrameReader implements Runnable{
             concatBytes.write("]".getBytes());
         writeOnFile(concatBytes.toByteArray(),!initalFrame);
         messageDTO.getParams().replace(chunkId, (currentInsertedFrames + 1));
-        System.out.println(chunkId + " " + messageDTO.getParams().toString());
 
         
     }

@@ -27,7 +27,7 @@ public class ClientService {
     public ClientService(String server, int port) throws IOException
     {
         clientSocket = new Socket(server, port);
-        dataOut = new BufferedOutputStream(clientSocket.getOutputStream(),Constants.BUFFER_SIZE);
+        dataOut = new BufferedOutputStream(clientSocket.getOutputStream());
         dataIn = new BufferedInputStream(clientSocket.getInputStream(),Constants.BUFFER_SIZE);
         connected = true;
 
@@ -43,7 +43,7 @@ public class ClientService {
             dataOut.write(message);
             dataOut.flush();
             byte[] lectura = new byte[Constants.BUFFER_SIZE];
-            int readSize = dataIn.read(lectura);
+            int readSize = dataIn.read(lectura);     
             if(readSize>0)
             {
                 byte[] datareaded = Arrays.copyOf(lectura, readSize);
