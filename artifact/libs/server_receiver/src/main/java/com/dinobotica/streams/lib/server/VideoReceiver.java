@@ -6,6 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,7 +72,7 @@ public class VideoReceiver implements Runnable{
         MessageDTO messageDTO = new MessageDTO();
         messageDTO.setParams(new HashMap<>());
         for(int i = 0;i<Constants.CHUNK_RATE; i++)
-            messageDTO.getParams().put("" + (i+1), 0);
+            messageDTO.getParams().put("" + (i+1), new LinkedList<Integer>());
         for(int j = 0; j < Constants.FRAME_RATE; j++)
             new Thread(new VideoReceiver(Constants.START_PORT + j,messageDTO)).start();
 

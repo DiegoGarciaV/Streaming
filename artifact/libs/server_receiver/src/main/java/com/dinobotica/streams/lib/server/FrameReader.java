@@ -7,11 +7,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.logging.Logger;
 
 import com.dinobotica.streams.dto.Constants;
 import com.dinobotica.streams.dto.MessageDTO;
 
+@SuppressWarnings("unchecked")
 public class FrameReader implements Runnable{
 
     protected BufferedInputStream dataIn;
@@ -77,9 +79,11 @@ public class FrameReader implements Runnable{
             byte[] fullDataReaded = concatBytes.toByteArray();
             getString(stringDataReaded);
             if(!endConnection && fullReadSize > 0)
+            {
                 writeReadedChunk(fullDataReaded,stringDataReaded);
-            else if(endConnection && (Integer)messageDTO.getParams().get(chunkId) < Constants.FRAME_RATE)
-                writeOnFile("]".getBytes(), true,false);
+            }
+            else if(endConnection && ((LinkedList<Integer>)messageDTO.getParams().get(chunkId)).size() < Constants.FRAME_RATE)
+                writeOnFile("]".getBytes(), true);
                       
         } 
         catch (IOException e) {
@@ -123,7 +127,8 @@ public class FrameReader implements Runnable{
         if(stringDataReaded.contains("chunkId"))
             chunkId = stringDataReaded.split(":")[1].replace(",\"time\"", "").replace(" ", "");
 
-        int currentInsertedFrames = (Integer)messageDTO.getParams().get(chunkId);
+        int currentInsertedFrames = ((LinkedList<Integer>)messageDTO.getParams().get(chunkId)).size();
+        ((LinkedList<Integer>)messageDTO.getParams().get(chunkId)).add(currentInsertedFrames+1);
         boolean initalFrame = (currentInsertedFrames == 0);
         boolean finalFrame = (currentInsertedFrames == (Constants.FRAME_RATE - 1));
         byte[] initialChar = (initalFrame ? "[".getBytes() : ",".getBytes());
@@ -132,13 +137,12 @@ public class FrameReader implements Runnable{
         concatBytes.write(datareaded);
         if(finalFrame)
             concatBytes.write("]".getBytes());
-        writeOnFile(concatBytes.toByteArray(),!initalFrame,(chunkId.equals("1") &&  currentInsertedFrames < 7));
-        messageDTO.getParams().replace(chunkId, (currentInsertedFrames + 1));
+        writeOnFile(concatBytes.toByteArray(),!initalFrame);
         
         
     }
 
-    private void writeOnFile(byte[] bytesToWrite, boolean append, boolean printData)
+    private void writeOnFile(byte[] bytesToWrite, boolean append)
     {
         String formatedChunkId = String.format("%04d", Integer.parseInt(chunkId));
         String finalPath = Constants.FRAMES_PATH + "FramesChunk_" + formatedChunkId + ".json";
