@@ -1,5 +1,6 @@
 package com.dinobotica.streams.lib.server;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -17,15 +18,17 @@ public class VideoReceiver implements Runnable{
 
     private int port;
     private MessageDTO messageDTO;
+    private ByteArrayOutputStream[] concatBytes;
 
     private static final int INACTIVITY_TIMEOUT = 300000;
 
     private static final Logger logger = Logger.getLogger(VideoReceiver.class.getName());
 
-    public VideoReceiver(int port, MessageDTO messageDTO)
+    public VideoReceiver(int port, MessageDTO messageDTO, ByteArrayOutputStream[] concatBytes)
     {
         this.port = port;
         this.messageDTO = messageDTO;
+        this.concatBytes = concatBytes;
     }
     
     @Override
@@ -37,7 +40,7 @@ public class VideoReceiver implements Runnable{
             socket.setSoTimeout(INACTIVITY_TIMEOUT);
             Socket clientSocket = socket.accept();
             FrameReader frameReader;
-            frameReader = new FrameReader(clientSocket,messageDTO);
+            frameReader = new FrameReader(clientSocket,messageDTO,concatBytes);
             frameReader.run();
         }
         catch(SocketTimeoutException soTmE)
@@ -71,11 +74,15 @@ public class VideoReceiver implements Runnable{
                 
         MessageDTO messageDTO = new MessageDTO();
         messageDTO.setParams(new HashMap<>());
+        ByteArrayOutputStream[] concatBytes = new ByteArrayOutputStream[Constants.CHUNK_RATE];
         for(int i = 0;i<Constants.CHUNK_RATE; i++)
+        {
             messageDTO.getParams().put("" + (i+1), new LinkedList<Integer>());
+            concatBytes[i] = new ByteArrayOutputStream();
+        }
         for(int j = 0; j < Constants.FRAME_RATE; j++)
-            new Thread(new VideoReceiver(Constants.START_PORT + j,messageDTO)).start();
-
+            new Thread(new VideoReceiver(Constants.START_PORT + j,messageDTO,concatBytes)).start();
+        
     }
     
 }

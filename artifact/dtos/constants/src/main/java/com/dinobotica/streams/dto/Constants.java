@@ -7,8 +7,8 @@ public class Constants {
     private Constants(){}
 
     public static final int BUFFER_SIZE = 1024<<11;
-    public static final int FRAME_RATE = 30;
-    public static final int CHUNK_RATE = 5;
+    public static final int FRAME_RATE = 5;
+    public static final int CHUNK_RATE = 10;
     public static final int START_PORT = 6600;
 
     private static final String TODAY_YEAR = "" + LocalDateTime.now().getYear();

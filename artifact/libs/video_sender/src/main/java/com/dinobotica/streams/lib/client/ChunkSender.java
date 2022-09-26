@@ -50,6 +50,7 @@ public class ChunkSender implements Runnable{
                     if(clientService!=null)
                     {
                         clientService.sendData((System.lineSeparator() + frameDto.toString()).getBytes());
+                        logger.info("Enviando Frame");
                         int num = (Integer)messageDTO.getParams().get(ParallelVideoSender.FRAMES_COUNT)+1;
                         messageDTO.getParams().replace(ParallelVideoSender.FRAMES_COUNT, num);
                     } 

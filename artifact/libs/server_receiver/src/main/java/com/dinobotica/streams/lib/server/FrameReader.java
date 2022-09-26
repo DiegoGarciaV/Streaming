@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.dinobotica.streams.dto.Constants;
@@ -18,6 +19,8 @@ public class FrameReader implements Runnable{
 
     protected BufferedInputStream dataIn;
     protected BufferedOutputStream dataOut;
+    
+    ByteArrayOutputStream[] concatBytes;
     private Socket clientSocket;
     private boolean endConnection = false;
     private String chunkId = "1";
@@ -29,10 +32,11 @@ public class FrameReader implements Runnable{
 
     private final Logger logger = Logger.getLogger(FrameReader.class.getName());
 
-    public FrameReader(Socket clienSocket, MessageDTO messageDTO) throws IOException
+    public FrameReader(Socket clienSocket, MessageDTO messageDTO, ByteArrayOutputStream[] concatBytes) throws IOException
     {
         this.clientSocket = clienSocket;
         this.messageDTO = messageDTO;
+        this.concatBytes = concatBytes;
         dataOut = new BufferedOutputStream(clienSocket.getOutputStream());
         dataIn = new BufferedInputStream(clienSocket.getInputStream(),Constants.BUFFER_SIZE);
         
@@ -57,11 +61,12 @@ public class FrameReader implements Runnable{
         
     }
 
+
     private void socketCommunication()
     {
         try 
         {
-            ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
+            ByteArrayOutputStream readedBytes = new ByteArrayOutputStream();
             String stringDataReaded = "";
             int fullReadSize = 0;
             do
@@ -72,11 +77,11 @@ public class FrameReader implements Runnable{
                     break;
                 fullReadSize = fullReadSize + readSize;
                 byte[] datareaded = Arrays.copyOf(lectura, readSize);
-                concatBytes.write(datareaded);
-                stringDataReaded = new String(concatBytes.toByteArray());
+                readedBytes.write(datareaded);
+                stringDataReaded = new String(readedBytes.toByteArray());
             }
             while(!(stringDataReaded.contains("{") && stringDataReaded.contains("}")) && !stringDataReaded.contains(END_MESSAJE));
-            byte[] fullDataReaded = concatBytes.toByteArray();
+            byte[] fullDataReaded = readedBytes.toByteArray();
             getString(stringDataReaded);
             if(!endConnection && fullReadSize > 0)
             {
@@ -114,6 +119,7 @@ public class FrameReader implements Runnable{
             else
             {
                 int longitud = readedData.length();
+
                 dataOut.write(("R.- " + longitud).getBytes());
                 dataOut.flush();
             }
@@ -122,22 +128,27 @@ public class FrameReader implements Runnable{
 
     private void writeReadedChunk(byte[] datareaded,String stringDataReaded) throws IOException
     {
-        
-        ByteArrayOutputStream concatBytes = new ByteArrayOutputStream();
         if(stringDataReaded.contains("chunkId"))
             chunkId = stringDataReaded.split(":")[1].replace(",\"time\"", "").replace(" ", "");
-
+        int msgLong = datareaded.length;
+        logger.log(Level.INFO,"{0}\n",msgLong);
+        int chunkIdNum = Integer.parseInt(chunkId) -1;
         int currentInsertedFrames = ((LinkedList<Integer>)messageDTO.getParams().get(chunkId)).size();
-        ((LinkedList<Integer>)messageDTO.getParams().get(chunkId)).add(currentInsertedFrames+1);
         boolean initalFrame = (currentInsertedFrames == 0);
+        
+        ((LinkedList<Integer>)messageDTO.getParams().get(chunkId)).add(currentInsertedFrames+1);
+        
         boolean finalFrame = (currentInsertedFrames == (Constants.FRAME_RATE - 1));
-        byte[] initialChar = (initalFrame ? "[".getBytes() : ",".getBytes());
+        String initialChar = (initalFrame ? "[" : ",");
 
-        concatBytes.write(initialChar);
-        concatBytes.write(datareaded);
+        concatBytes[chunkIdNum].write((initialChar + stringDataReaded).getBytes());
         if(finalFrame)
-            concatBytes.write("]".getBytes());
-        writeOnFile(concatBytes.toByteArray(),!initalFrame);
+        {
+            concatBytes[chunkIdNum].write("]".getBytes());
+            writeOnFile(concatBytes[chunkIdNum].toByteArray(),false);
+            concatBytes[chunkIdNum].reset();
+            ((LinkedList<Integer>)messageDTO.getParams().get(chunkId)).clear();
+        }
         
         
     }
